@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String, Date, Int
 import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from .models import User, Vacation, AuthEntry, Department
+from .sha256 import sha256_hash_function
 
 SqlAlchemyBase = sqlalchemy.orm.declarative_base()
 
@@ -94,7 +95,7 @@ class DataBase:
     def add_auth(self, email, password):
         new_auth = AuthEntry(
             email=email,
-            password=password
+            password=sha256_hash_function(password)
         )
         with Session(self.engine) as session:
             session.add(new_auth)
