@@ -1,73 +1,80 @@
 import React, { useState } from 'react';
 import Calendar from '../components/Calendar';
-import DepartmentFilter from '../components/DepartmentFilter';
-import Modal from '../components/Modal';
-import AddVacationForm from '../components/AddVacationForm';
-import { useNavigate } from 'react-router-dom';
+import AddVacationModal from '../components/AddVacationModal';
 
 const HomePage = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDepartment, setSelectedDepartment] = useState('all');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const navigate = useNavigate();
+  const currentDate = new Date();
+  const [month, setMonth] = useState(currentDate.getMonth() + 1);
+  const [year, setYear] = useState(currentDate.getFullYear());
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [vacations, setVacations] = useState([
+    { 
+      id: 1, 
+      employeeId: 7, 
+      employeeName: 'Васильев С.С',
+      startDay: 5, 
+      endDay: 15, 
+      reason: 'Отпуск по болезни',
+      department: 'hr'
+    }
+  ]);
 
-  const month = currentDate.getMonth();
-  const year = currentDate.getFullYear();
+  // Пример данных
+  const departments = [
+    { id: 'dev', name: 'Разработка' },
+    { id: 'qa', name: 'Тестирование' },
+    { id: 'marketing', name: 'Маркетинг' },
+    { id: 'hr', name: 'HR' }
+  ];
+
+  const employees = [
+    { id: 1, name: 'Иванов И.И', department: 'dev' },
+    { id: 2, name: 'Смирнов С.С', department: 'dev' },
+    { id: 3, name: 'Соколов С.С', department: 'qa' },
+    { id: 4, name: 'Кузнецов К.К', department: 'qa' },
+    { id: 5, name: 'Попова П.А', department: 'marketing' },
+    { id: 6, name: 'Петрова А.П', department: 'marketing' },
+    { id: 7, name: 'Васильев С.С', department: 'hr' },
+    { id: 8, name: 'Магомедов М.М', department: 'hr' },
+    { id: 9, name: 'Алиев А.В', department: 'dev' },
+    { id: 10, name: 'Волков С.С', department: 'qa' },
+    { id: 11, name: 'Орлова С.С', department: 'marketing' }
+  ];
 
   const handleMonthChange = (newMonth, newYear) => {
-    setCurrentDate(new Date(newYear, newMonth, 1));
+    setMonth(newMonth);
+    setYear(newYear);
   };
 
-  const handleAddVacation = (vacationData) => {
-    console.log('Добавлен отпуск:', vacationData);
-    setIsModalOpen(false);
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    const query = e.target.search.value;
-    // В реальном приложении здесь будет поиск и перенаправление
-    console.log('Поиск:', query);
+  const handleAddVacation = (newVacation) => {
+    setVacations(prev => [
+      ...prev,
+      {
+        ...newVacation,
+        id: Math.max(...prev.map(v => v.id), 0) + 1
+      }
+    ]);
   };
 
   return (
     <div className="home-page">
-      <div className="controls">
-        <DepartmentFilter 
-          selectedDepartment={selectedDepartment} 
-          onSelect={setSelectedDepartment} 
-        />
-        
-        <button 
-          className="add-vacation-btn" 
-          onClick={() => setIsModalOpen(true)}
-        >
-          Добавить отпуск
-        </button>
-        
-        <form onSubmit={handleSearch} className="search-form">
-          <input 
-            type="text" 
-            name="search" 
-            placeholder="Поиск по ФИО" 
-          />
-          <button type="submit">Найти</button>
-        </form>
-      </div>
-      
       <Calendar 
-        month={month} 
-        year={year} 
-        vacations={[]} 
-        onMonthChange={handleMonthChange} 
+        month={month}
+        year={year}
+        onMonthChange={handleMonthChange}
+        onAddClick={() => setIsAddModalOpen(true)}
+        vacations={vacations}
+        departments={departments}
+        employees={employees}
       />
-      
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
-        <AddVacationForm 
-          onSubmit={handleAddVacation} 
-          onCancel={() => setIsModalOpen(false)} 
-        />
-      </Modal>
+
+      <AddVacationModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSave={handleAddVacation}
+        departments={departments}
+        employees={employees}
+      />
     </div>
   );
 };

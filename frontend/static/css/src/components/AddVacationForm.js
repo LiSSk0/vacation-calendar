@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 
-const AddVacationForm = ({ onSubmit, onCancel }) => {
+const AddVacationForm = ({ onSubmit, departments }) => {
   const [formData, setFormData] = useState({
-    startDate: '',
-    endDate: '',
-    reason: '',
-    department: '',
+    fromDate: '',
+    toDate: '',
+    department: departments[0]?.id || '',
+    reason: ''
   });
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value
     });
   };
 
@@ -22,60 +23,49 @@ const AddVacationForm = ({ onSubmit, onCancel }) => {
 
   return (
     <form onSubmit={handleSubmit} className="vacation-form">
-      <h3>Добавить отпуск</h3>
-      
-      <label>
-        Дата начала:
-        <input 
-          type="date" 
-          name="startDate" 
-          value={formData.startDate} 
-          onChange={handleChange} 
-          required 
+      <div className="form-group">
+        <label>Дата начала:</label>
+        <input
+          type="date"
+          name="fromDate"
+          value={formData.fromDate}
+          onChange={handleChange}
+          required
         />
-      </label>
-      
-      <label>
-        Дата окончания:
-        <input 
-          type="date" 
-          name="endDate" 
-          value={formData.endDate} 
-          onChange={handleChange} 
-          required 
+      </div>
+      <div className="form-group">
+        <label>Дата окончания:</label>
+        <input
+          type="date"
+          name="toDate"
+          value={formData.toDate}
+          onChange={handleChange}
+          required
         />
-      </label>
-      
-      <label>
-        Причина:
-        <input 
-          type="text" 
-          name="reason" 
-          value={formData.reason} 
-          onChange={handleChange} 
-          required 
-        />
-      </label>
-      
-      <label>
-        Отдел:
-        <select 
-          name="department" 
-          value={formData.department} 
-          onChange={handleChange} 
+      </div>
+      <div className="form-group">
+        <label>Отдел:</label>
+        <select
+          name="department"
+          value={formData.department}
+          onChange={handleChange}
           required
         >
-          <option value="">Выберите отдел</option>
-          <option value="1">Отдел разработки</option>
-          <option value="2">Отдел тестирования</option>
-          <option value="3">Отдел маркетинга</option>
+          {departments.map((dept) => (
+            <option key={dept.id} value={dept.id}>{dept.name}</option>
+          ))}
         </select>
-      </label>
-      
-      <div className="form-buttons">
-        <button type="submit">Добавить</button>
-        <button type="button" onClick={onCancel}>Отмена</button>
       </div>
+      <div className="form-group">
+        <label>Причина:</label>
+        <textarea
+          name="reason"
+          value={formData.reason}
+          onChange={handleChange}
+          required
+        />
+      </div>
+      <button type="submit" className="btn-primary">Добавить отпуск</button>
     </form>
   );
 };
