@@ -1,26 +1,18 @@
 import React from 'react';
 
-const DepartmentFilter = ({ selectedDepartment, onSelect }) => {
-  const departments = [
-    { id: 'all', name: 'Все отделы' },
-    { id: '1', name: 'Отдел разработки' },
-    { id: '2', name: 'Отдел тестирования' },
-    { id: '3', name: 'Отдел маркетинга' },
-  ];
-
+const DepartmentFilter = ({ departments, selectedDepartment, onSelect }) => {
   return (
     <div className="department-filter">
-      <label>
-        Фильтр по отделам:
-        <select 
-          value={selectedDepartment} 
-          onChange={(e) => onSelect(e.target.value)}
-        >
-          {departments.map(dept => (
-            <option key={dept.id} value={dept.id}>{dept.name}</option>
-          ))}
-        </select>
-      </label>
+      <label>Отдел:</label>
+      <select
+        value={selectedDepartment}
+        onChange={(e) => onSelect(e.target.value)}
+      >
+        <option value="">Все отделы</option>
+        {departments.map((dept) => (
+          <option key={dept.id} value={dept.id}>{dept.name}</option>
+        ))}
+      </select>
     </div>
   );
 };
