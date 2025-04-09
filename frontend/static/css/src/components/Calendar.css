@@ -1,0 +1,153 @@
+.calendar-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+  
+  .calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+  
+  .date-selector input {
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .search-box {
+    flex: 1;
+    max-width: 300px;
+  }
+  
+  .search-box input {
+    width: 100%;
+    padding: 8px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+  
+  .add-vacation-btn {
+    background-color: #6a5acd;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+  
+  .calendar-content {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .employees-list {
+    width: 200px;
+  }
+  
+  .department-select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+  }
+  
+  .employee-name {
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s;
+  }
+  
+  .employee-name:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .employee-name.selected {
+    background-color: #e6e6fa;
+    font-weight: bold;
+  }
+  
+  .calendar-grid {
+    flex: 1;
+    overflow-x: auto;
+  }
+  
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(31, minmax(30px, 1fr));
+    margin-bottom: 10px;
+    min-width: 930px;
+  }
+  
+  .calendar-day {
+    text-align: center;
+    padding: 5px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .calendar-row {
+    display: grid;
+    grid-template-columns: repeat(31, minmax(30px, 1fr));
+    height: 40px;
+    margin-bottom: 5px;
+    min-width: 930px;
+  }
+  
+  .calendar-cell {
+    border: 1px solid #eee;
+  }
+  
+  .calendar-cell.vacation {
+    background-color: #6a5acd;
+    opacity: 0.7;
+  }
+  
+  .vacation-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    border-left: 4px solid #6a5acd;
+  }
+  
+  .vacation-info h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .vacation-info p {
+    margin-bottom: 0;
+    color: #666;
+  }
+  
+  @media (max-width: 768px) {
+    .calendar-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .search-box {
+      max-width: 100%;
+    }
+    
+    .calendar-content {
+      flex-direction: column;
+    }
+    
+    .employees-list {
+      width: 100%;
+    }
+  }
