@@ -1,10 +1,14 @@
 :root {
-    --primary-color: #6a5acd;
-    --secondary-color: #9370db;
-    --background-color: #c4c3e3;
-    --text-color: #333;
+    --primary-color: #78866b; /* хаки */
+    --primary-color-light: #a3b18a; /* светлый хаки */
+    --primary-color-dark: #4b5320; /* тёмный хаки */
+    --secondary-color: #b7b7a4; /* дополнительный светлый */
+    --background-color: #f5f5ef; /* очень светлый хаки/беж */
+    --text-color: #2d2d1a;
     --light-text: #fff;
-    --error-color: #ff5252;
+    --error-color: #b22222;
+    --accent-color: #dde5b6;
+    --shadow: 0 2px 10px rgba(120, 134, 107, 0.10);
   }
   
   body {
