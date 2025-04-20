@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const ProfileForm = ({ user, onSubmit }) => {
+  const { updateUser } = useAuth();
   const [formData, setFormData] = useState({
     position: user.position || '',
     department: user.department || ''
@@ -16,6 +18,7 @@ const ProfileForm = ({ user, onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    updateUser(formData);
     onSubmit(formData);
   };
 
@@ -37,11 +40,13 @@ const ProfileForm = ({ user, onSubmit }) => {
           name="department"
           value={formData.department}
           onChange={handleChange}
+          required
         >
-          <option value="1">Отдел разработки</option>
-          <option value="2">Отдел тестирования</option>
-          <option value="3">Отдел маркетинга</option>
-          <option value="4">HR отдел</option>
+          <option value="">Выберите отдел</option>
+          <option value="dev">Разработка</option>
+          <option value="qa">Тестирование</option>
+          <option value="marketing">Маркетинг</option>
+          <option value="hr">HR</option>
         </select>
       </div>
       
