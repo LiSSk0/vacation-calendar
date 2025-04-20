@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './AuthProfile.css';
+
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({

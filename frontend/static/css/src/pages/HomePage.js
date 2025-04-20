@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import Calendar from '../components/Calendar';
 import AddVacationModal from '../components/AddVacationModal';
+import { useAuth } from '../context/AuthContext';
 
 const HomePage = () => {
   const currentDate = new Date();
+  const { user } = useAuth();
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -14,12 +16,15 @@ const HomePage = () => {
       employeeName: 'Васильев С.С',
       startDay: 5, 
       endDay: 15, 
+      month: 4,
+      year: 2023,
+      endMonth: 4,
+      endYear: 2023,
       reason: 'Отпуск по болезни',
       department: 'hr'
     }
   ]);
 
-  // Пример данных
   const departments = [
     { id: 'dev', name: 'Разработка' },
     { id: 'qa', name: 'Тестирование' },
@@ -46,12 +51,29 @@ const HomePage = () => {
     setYear(newYear);
   };
 
-  const handleAddVacation = (newVacation) => {
+  const handleAddVacation = (formData) => {
+    if (!user?.department) {
+      alert('Для добавления отпуска необходимо указать отдел в личном кабинете');
+      return;
+    }
+
+    const start = new Date(formData.startDate);
+    const end = new Date(formData.endDate);
+    
     setVacations(prev => [
       ...prev,
       {
-        ...newVacation,
-        id: Math.max(...prev.map(v => v.id), 0) + 1
+        id: Math.max(...prev.map(v => v.id), 0) + 1,
+        employeeId: user.id,
+        employeeName: `${user.surname} ${user.name} ${user.middlename}`,
+        startDay: start.getDate(),
+        endDay: end.getDate(),
+        month: start.getMonth() + 1,
+        year: start.getFullYear(),
+        endMonth: end.getMonth() + 1,
+        endYear: end.getFullYear(),
+        department: user.department,
+        reason: formData.reason
       }
     ]);
   };
@@ -62,7 +84,17 @@ const HomePage = () => {
         month={month}
         year={year}
         onMonthChange={handleMonthChange}
-        onAddClick={() => setIsAddModalOpen(true)}
+        onAddClick={() => {
+          if (!user) {
+            alert('Для добавления отпуска необходимо авторизоваться');
+            return;
+          }
+          if (!user.department) {
+            alert('Для добавления отпуска необходимо указать отдел в личном кабинете');
+            return;
+          }
+          setIsAddModalOpen(true);
+        }}
         vacations={vacations}
         departments={departments}
         employees={employees}
@@ -72,8 +104,7 @@ const HomePage = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddVacation}
-        departments={departments}
-        employees={employees}
+        user={user}
       />
     </div>
   );
