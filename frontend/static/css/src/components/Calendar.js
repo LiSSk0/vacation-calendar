@@ -1,10 +1,6 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Calendar.js
+import React, { useState } from 'react';
 import './Calendar.css';
-
-const monthNames = [
-  'Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
-  'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'
-];
 
 const Calendar = ({ 
   month, 
@@ -107,31 +103,12 @@ const Calendar = ({
 
           {filteredEmployees.map(employee => {
             const vacation = vacations.find(v => v.employeeId === employee.id);
-            if (!vacation) return null;
-
-            const isInCurrentMonth = 
-              (vacation.year === year && vacation.month === month) ||
-              (vacation.endYear === year && vacation.endMonth === month) ||
-              (vacation.year < year || (vacation.year === year && vacation.month < month)) && 
-              (vacation.endYear > year || (vacation.endYear === year && vacation.endMonth > month));
-
-            if (!isInCurrentMonth) return null;
-
-            let displayStartDay = 1;
-            let displayEndDay = daysInMonth;
-
-            if (vacation.year === year && vacation.month === month) {
-              displayStartDay = vacation.startDay;
-            }
-
-            if (vacation.endYear === year && vacation.endMonth === month) {
-              displayEndDay = vacation.endDay;
-            }
-
             return (
               <div key={employee.id} className="calendar-row">
                 {days.map(day => {
-                  const isVacation = day >= displayStartDay && day <= displayEndDay;
+                  const isVacation = vacation && 
+                    day >= vacation.startDay && 
+                    day <= vacation.endDay;
                   return (
                     <div
                       key={day}
@@ -155,5 +132,10 @@ const Calendar = ({
     </div>
   );
 };
+
+const monthNames = [
+  'Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
+  'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'
+];
 
 export default Calendar;
