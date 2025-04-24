@@ -1,8 +1,8 @@
+// src/pages/RegisterPage.js
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import './AuthProfile.css';
-
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -13,8 +13,7 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: ''
   });
-  const [error, setError] = useState('');
-  const { register } = useAuth();
+  const { register, error } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,12 +24,11 @@ const RegisterPage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
+    
     if (formData.password !== formData.confirmPassword) {
-      setError('Пароли не совпадают');
+      alert('Пароли не совпадают');
       return;
     }
 
@@ -38,10 +36,14 @@ const RegisterPage = () => {
       email: formData.email,
       name: formData.name,
       surname: formData.surname,
-      middlename: formData.middlename
+      middlename: formData.middlename,
+      password: formData.password
     };
-    register(userData);
-    navigate('/');
+
+    const success = await register(userData);
+    if (success) {
+      navigate('/');
+    }
   };
 
   return (
