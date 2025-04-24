@@ -110,6 +110,17 @@ class DataBase:
             session.add(new_department)
             session.commit()
 
+    # Получение всех пользователей
+    def get_users(self):
+        with Session(self.engine) as session:
+            users = session.query(User).all()
+            return users
+
+    # Получение пользователя по почте
+    def find_user_by_email(self, email):
+        with Session(self.engine) as session:
+            return session.query(AuthEntry).filter_by(email=email).first()
+
     def print(self, table):
         with Session(self.engine) as session:
             # Выполняем запрос к таблице, чтобы получить все записи
