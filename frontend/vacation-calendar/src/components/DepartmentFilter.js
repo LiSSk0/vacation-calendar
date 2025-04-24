@@ -8,7 +8,7 @@ const DepartmentFilter = ({ departments, selectedDepartment, onSelect }) => {
         value={selectedDepartment}
         onChange={(e) => onSelect(e.target.value)}
       >
-        <option value="">Все отделы</option>
+        <option value=""> Все отделы</option>
         {departments.map((dept) => (
           <option key={dept.id} value={dept.id}>{dept.name}</option>
         ))}
