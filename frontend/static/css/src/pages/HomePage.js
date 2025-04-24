@@ -1,60 +1,77 @@
-import React, { useState } from 'react';
+// src/pages/HomePage.js
+import React, { useState, useEffect } from 'react';
 import Calendar from '../components/Calendar';
 import AddVacationModal from '../components/AddVacationModal';
+import { useAuth } from '../context/AuthContext';
+import { getVacations, getDepartments, getUsers, addVacation } from '../api';
 
 const HomePage = () => {
   const currentDate = new Date();
+  const { user } = useAuth();
   const [month, setMonth] = useState(currentDate.getMonth() + 1);
   const [year, setYear] = useState(currentDate.getFullYear());
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [vacations, setVacations] = useState([
-    { 
-      id: 1, 
-      employeeId: 7, 
-      employeeName: 'Васильев С.С',
-      startDay: 5, 
-      endDay: 15, 
-      reason: 'Отпуск по болезни',
-      department: 'hr'
-    }
-  ]);
+  const [vacations, setVacations] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Пример данных
-  const departments = [
-    { id: 'dev', name: 'Разработка' },
-    { id: 'qa', name: 'Тестирование' },
-    { id: 'marketing', name: 'Маркетинг' },
-    { id: 'hr', name: 'HR' }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [vacationsData, departmentsData, employeesData] = await Promise.all([
+          getVacations(month, year),
+          getDepartments(),
+          getUsers()
+        ]);
+        setVacations(vacationsData);
+        setDepartments(departmentsData);
+        setEmployees(employeesData.map(e => ({
+          id: e.email,
+          name: `${e.surname} ${e.name} ${e.middlename}`,
+          department: e.department
+        })));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const employees = [
-    { id: 1, name: 'Иванов И.И', department: 'dev' },
-    { id: 2, name: 'Смирнов С.С', department: 'dev' },
-    { id: 3, name: 'Соколов С.С', department: 'qa' },
-    { id: 4, name: 'Кузнецов К.К', department: 'qa' },
-    { id: 5, name: 'Попова П.А', department: 'marketing' },
-    { id: 6, name: 'Петрова А.П', department: 'marketing' },
-    { id: 7, name: 'Васильев С.С', department: 'hr' },
-    { id: 8, name: 'Магомедов М.М', department: 'hr' },
-    { id: 9, name: 'Алиев А.В', department: 'dev' },
-    { id: 10, name: 'Волков С.С', department: 'qa' },
-    { id: 11, name: 'Орлова С.С', department: 'marketing' }
-  ];
+    fetchData();
+  }, [month, year]);
 
   const handleMonthChange = (newMonth, newYear) => {
     setMonth(newMonth);
     setYear(newYear);
   };
 
-  const handleAddVacation = (newVacation) => {
-    setVacations(prev => [
-      ...prev,
-      {
-        ...newVacation,
-        id: Math.max(...prev.map(v => v.id), 0) + 1
+  const handleAddVacation = async (formData) => {
+    try {
+      if (!user?.department) {
+        alert('Для добавления отпуска необходимо указать отдел в личном кабинете');
+        return;
       }
-    ]);
+
+      const newVacation = await addVacation({
+        email: user.email,
+        fromDate: formData.startDate,
+        toDate: formData.endDate,
+        department: user.department,
+        reason: formData.reason
+      });
+
+      setVacations(prev => [...prev, newVacation]);
+      setIsAddModalOpen(false);
+    } catch (err) {
+      alert(err.message);
+    }
   };
+
+  if (loading) return <div>Загрузка...</div>;
+  if (error) return <div>Ошибка: {error}</div>;
 
   return (
     <div className="home-page">
@@ -62,7 +79,17 @@ const HomePage = () => {
         month={month}
         year={year}
         onMonthChange={handleMonthChange}
-        onAddClick={() => setIsAddModalOpen(true)}
+        onAddClick={() => {
+          if (!user) {
+            alert('Для добавления отпуска необходимо авторизоваться');
+            return;
+          }
+          if (!user.department) {
+            alert('Для добавления отпуска необходимо указать отдел в личном кабинете');
+            return;
+          }
+          setIsAddModalOpen(true);
+        }}
         vacations={vacations}
         departments={departments}
         employees={employees}
@@ -72,8 +99,7 @@ const HomePage = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onSave={handleAddVacation}
-        departments={departments}
-        employees={employees}
+        user={user}
       />
     </div>
   );
