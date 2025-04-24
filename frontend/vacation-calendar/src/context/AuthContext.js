@@ -1,39 +1,80 @@
-import React, { createContext, useState, useContext } from 'react';
+// src/context/AuthContext.js
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { login as apiLogin, register as apiRegister } from '../api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const login = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const login = async (credentials) => {
+    try {
+      setError(null);
+      const { token, user } = await apiLogin(credentials.email, credentials.password);
+      setUser(user);
+      setIsAuthenticated(true);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
   };
 
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
+    localStorage.removeItem('token');
     localStorage.removeItem('user');
   };
 
-  const register = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem('user', JSON.stringify(userData));
+  const register = async (userData) => {
+    try {
+      setError(null);
+      const { token, user } = await apiRegister(userData);
+      setUser(user);
+      setIsAuthenticated(true);
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      return true;
+    } catch (err) {
+      setError(err.message);
+      return false;
+    }
   };
 
-  React.useEffect(() => {
+  const updateUser = (updatedData) => {
+    const updatedUser = { ...user, ...updatedData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    
+    if (token && storedUser) {
       setUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
     }
+    setLoading(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, register }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      loading,
+      error,
+      login, 
+      logout, 
+      register,
+      updateUser 
+    }}>
       {children}
     </AuthContext.Provider>
   );
