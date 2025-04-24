@@ -1,12 +1,13 @@
+// src/components/AddVacationForm.js
 import React, { useState } from 'react';
 
-const AddVacationForm = ({ onSubmit, departments }) => {
+const AddVacationForm = ({ onSubmit, user }) => {
   const [formData, setFormData] = useState({
-    fromDate: '',
-    toDate: '',
-    department: departments[0]?.id || '',
+    startDate: '',
+    endDate: '',
     reason: ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,17 +19,30 @@ const AddVacationForm = ({ onSubmit, departments }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    if (!formData.startDate || !formData.endDate || !formData.reason) {
+      setError('Все поля обязательны для заполнения');
+      return;
+    }
+    
+    if (new Date(formData.startDate) > new Date(formData.endDate)) {
+      setError('Дата окончания должна быть после даты начала');
+      return;
+    }
+    
+    setError('');
     onSubmit(formData);
   };
 
   return (
     <form onSubmit={handleSubmit} className="vacation-form">
+      {error && <div className="error-message">{error}</div>}
       <div className="form-group">
         <label>Дата начала:</label>
         <input
           type="date"
-          name="fromDate"
-          value={formData.fromDate}
+          name="startDate"
+          value={formData.startDate}
           onChange={handleChange}
           required
         />
@@ -37,24 +51,11 @@ const AddVacationForm = ({ onSubmit, departments }) => {
         <label>Дата окончания:</label>
         <input
           type="date"
-          name="toDate"
-          value={formData.toDate}
+          name="endDate"
+          value={formData.endDate}
           onChange={handleChange}
           required
         />
-      </div>
-      <div className="form-group">
-        <label>Отдел:</label>
-        <select
-          name="department"
-          value={formData.department}
-          onChange={handleChange}
-          required
-        >
-          {departments.map((dept) => (
-            <option key={dept.id} value={dept.id}>{dept.name}</option>
-          ))}
-        </select>
       </div>
       <div className="form-group">
         <label>Причина:</label>

@@ -1,12 +1,9 @@
-// src/components/AddVacationModal.js
 import React, { useState } from 'react';
 import Modal from './Modal';
 import './AddVacationModal.css';
 
-const AddVacationModal = ({ isOpen, onClose, onSave, departments, employees }) => {
+const AddVacationModal = ({ isOpen, onClose, onSave, user }) => {
   const [formData, setFormData] = useState({
-    employeeId: '',
-    department: '',
     startDate: '',
     endDate: '',
     reason: ''
@@ -22,37 +19,19 @@ const AddVacationModal = ({ isOpen, onClose, onSave, departments, employees }) =
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const selectedEmployee = employees.find(e => e.id === parseInt(formData.employeeId));
-    onSave({
-      ...formData,
-      employeeId: parseInt(formData.employeeId),
-      employeeName: selectedEmployee ? selectedEmployee.name : '',
-      startDay: new Date(formData.startDate).getDate(),
-      endDay: new Date(formData.endDate).getDate()
-    });
+    
+    if (!user?.department) {
+      alert('Для добавления отпуска необходимо указать отдел в личном кабинете');
+      return;
+    }
+
+    onSave(formData);
     onClose();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Добавить отпуск">
       <form onSubmit={handleSubmit} className="vacation-form">
-        <div className="form-group">
-          <label>Сотрудник</label>
-          <select
-            name="employeeId"
-            value={formData.employeeId}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Выберите сотрудника</option>
-            {employees.map(employee => (
-              <option key={employee.id} value={employee.id}>
-                {employee.name} ({departments.find(d => d.id === employee.department)?.name})
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="form-group">
           <label>Дата начала</label>
           <input

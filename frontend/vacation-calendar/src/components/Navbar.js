@@ -17,7 +17,7 @@ const Navbar = () => {
             <>
               <span className="navbar-greeting">Добрый день, {user.name}!</span>
               <Link to="/profile" className="profile-link">
-                <span className="profile-icon">👤</span>
+              <span className="profile-icon">👤</span>
               </Link>
               <button onClick={logout} className="logout-btn">Выйти</button>
             </>
