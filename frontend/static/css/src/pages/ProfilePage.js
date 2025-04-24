@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import Modal from '../components/Modal';
 import ProfileForm from '../components/ProfileForm';
