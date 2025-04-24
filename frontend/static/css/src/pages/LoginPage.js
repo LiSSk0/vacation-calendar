@@ -1,30 +1,20 @@
+// src/pages/LoginPage.js
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import './AuthProfile.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { login, error } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
-    if (email && password) {
-      const userData = {
-        email,
-        name: 'Иван',
-        surname: 'Иванов',
-        middlename: 'Иванович',
-        position: 'Разработчик'
-      };
-      login(userData);
+    const success = await login({ email, password });
+    if (success) {
       navigate('/');
-    } else {
-      setError('Пожалуйста, заполните все поля');
     }
   };
 
