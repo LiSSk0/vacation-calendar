@@ -116,6 +116,18 @@ class DataBase:
             users = session.query(User).all()
             return users
 
+    # Получение всех отпусков
+    def get_vacations(self):
+        with Session(self.engine) as session:
+            vacations = session.query(Vacation).all()
+            return vacations
+
+    # Получение списка отделов
+    def get_departments(self):
+        with Session(self.engine) as session:
+            departments = session.query(Department).all()
+            return departments
+
     # Получение пользователя по почте
     def find_user_by_email(self, email):
         with Session(self.engine) as session:
