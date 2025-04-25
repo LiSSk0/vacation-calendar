@@ -1,4 +1,5 @@
 from flask import request, jsonify
+from db.sha256 import sha256_hash_function
 
 
 def register_routes(app):
@@ -27,6 +28,50 @@ def register_routes(app):
             print(f"# Ошибка при получении списка пользователей: {e}")
             return jsonify({'success': False, 'error': 'Ошибка сервера при получении списка пользователей'}), 500
 
+    # Получение списка отпусков
+    @app.route('/api/vacations', methods=['GET'])
+    def get_vacations():
+        try:
+            # Получаем все отпуска из БД
+            vacations = app.db.get_vacations()
+
+            # Формируем JSON
+            vacations_json = [
+                {
+                    'email': vacation.email,
+                    'fromDate': vacation.fromDate,
+                    'toDate': vacation.toDate,
+                    'department': vacation.department,
+                    'reason': vacation.reason,
+                }
+                for vacation in vacations
+            ]
+
+            return jsonify(vacations_json)
+        except Exception as e:
+            print(f"# Ошибка при получении списка отпусков: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при получении списка отпусков'}), 500
+
+    # Получение списка отделов
+    @app.route('/api/departments', methods=['GET'])
+    def get_departments():
+        try:
+            # Получаем все отделы из БД
+            departments = app.db.get_departments()
+
+            # Формируем JSON
+            departments_json = [
+                {
+                    'name': department.name
+                }
+                for department in departments
+            ]
+
+            return jsonify(departments_json)
+        except Exception as e:
+            print(f"# Ошибка при получении списка отделов: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при получении списка отделов'}), 500
+
     # Проверка пароля
     @app.route('/api/login', methods=['POST'])
     def login():
@@ -36,20 +81,21 @@ def register_routes(app):
             password = data.get('password')
 
             # Проверка на наличие почты и пароля
+            # такая проверка также есть на стороне JS
             if not email or not password:
-                return jsonify({'success': False, 'error': 'Missing email or password'}), 400
+                return jsonify({'success': False, 'error': 'Отсутствует логин или пароль'}), 400
 
             # Получаем пользователя по почте из БД
             user = app.db.find_user_by_email(email)
 
             # Проверяем, что запрошенный пользователь есть в БД
             if not user:
-                return jsonify({'success': False, 'error': 'User not found'}), 404
+                return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
 
             # Проверяем, подходит ли пароль
-            stored_password = user.password
+            stored_password = sha256_hash_function(user.password)
             if stored_password != password:
-                return jsonify({'success': False, 'error': 'Invalid password'}), 401
+                return jsonify({'success': False, 'error': 'Неверный пароль'}), 401
 
             return jsonify({'success': True, 'email': email})
         except Exception as e:
@@ -73,3 +119,27 @@ def register_routes(app):
         except Exception as e:
             print(f"# Ошибка при добавлении отпуска: {e}")
             return jsonify({'success': False, 'error': 'Ошибка сервера при добавлении отпуска'}), 500
+
+    # Добавление нового пользователя
+    @app.route('/api/register', methods=['POST'])
+    def register():
+        try:
+            data = request.get_json()
+
+            app.db.add_user(
+                data.get('email'),
+                data.get('name'),
+                data.get('surname'),
+                data.get('middlename'),
+                data.get('position')
+            )
+
+            app.db.add_auth(
+                data.get('email'),
+                data.get('password')
+            )
+
+            return jsonify({'success': True})
+        except Exception as e:
+            print(f"# Ошибка добавления нового пользователя: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при регистрации пользователя'}), 500

@@ -18,7 +18,7 @@ def create_app():
     # Инициализация БД
     app.db = DataBase(DB_NAME, DB_USER, DB_PASSWORD)
 
-    # Роуты
+    # Маршруты
     register_routes(app)
 
     return app
