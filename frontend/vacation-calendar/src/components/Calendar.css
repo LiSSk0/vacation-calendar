@@ -48,13 +48,16 @@
 .calendar-content {
   display: flex;
   gap: 20px;
+  align-items: stretch;
 }
 
 .employees-list {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  max-height: 300px;
+  height: 100%;
+  max-height: none;
+  flex: 1;
 }
 
 .department-select {
@@ -140,15 +143,15 @@
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .search-box {
     max-width: 100%;
   }
-  
+
   .calendar-content {
     flex-direction: column;
   }
-  
+
   .employees-list {
     width: 100%;
   }
