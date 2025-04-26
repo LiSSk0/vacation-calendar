@@ -1,0 +1,4 @@
+sqlalchemy
+werkzeug
+flask
+dotenv
