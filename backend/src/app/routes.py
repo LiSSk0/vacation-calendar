@@ -111,7 +111,7 @@ def register_routes(app):
                 return jsonify({'success': False, 'error': 'Invalid email'}), 400
 
             # проверяем, что пользователь ещё не существует
-            if app.db.find_user_by_email(email):
+            if app.db.find_name_by_email(email):
                 return jsonify({'success': False, 'error': 'User already exists'}), 409
 
             # создаём запись в users и auth

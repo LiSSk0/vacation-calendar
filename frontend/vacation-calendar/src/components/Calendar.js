@@ -45,91 +45,89 @@ const Calendar = ({
   };
 
   return (
-    <div className="calendar-container">
-      <div className="calendar-header">
-        <div className="date-selector">
-          <input
-            type="month"
-            value={`${year}-${String(month).padStart(2, '0')}`}
-            onChange={handleMonthYearChange}
-          />
+      <div className="calendar-container">
+        <div className="calendar-header">
+          <div className="date-selector">
+            <input
+                type="month"
+                value={`${year}-${String(month).padStart(2, '0')}`}
+                onChange={handleMonthYearChange}
+            />
+          </div>
+          <div className="search-box">
+            <input
+                type="text"
+                placeholder="Введите запрос"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <button className="add-vacation-btn" onClick={onAddClick}>
+            + Добавить информацию
+          </button>
         </div>
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Введите запрос"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <button className="add-vacation-btn" onClick={onAddClick}>
-          + Добавить информацию
-        </button>
-      </div>
 
-      <div className="calendar-content">
-        <div className="employees-list">
-          <select 
-            className="department-select"
-            value={selectedDepartment}
-            onChange={handleDepartmentChange}
-          >
-            <option value="all">Все отделы</option>
-            {departments.map(dept => (
-              <option key={dept.id} value={dept.id}>{dept.name}</option>
-            ))}
-          </select>
-          {filteredEmployees.map(employee => (
-            <div 
-              key={employee.id}
-              className={`employee-name ${
-                selectedEmployee?.id === employee.id ? 'selected' : ''
-              }`}
-              onClick={() => handleEmployeeClick(employee)}
+        <div className="calendar-content">
+          <div className="employees-list">
+            <select
+                className="department-select"
+                value={selectedDepartment}
+                onChange={handleDepartmentChange}
             >
-              {employee.name}
-            </div>
-          ))}
-        </div>
-
-        <div className="calendar-grid">
-          <div className="calendar-days">
-            {days.map(day => (
-              <div key={day} className="calendar-day">
-                {day}
-              </div>
+              <option value="all">Все отделы</option>
+              {departments.map(dept => (
+                  <option key={dept.id} value={dept.id}>{dept.name}</option>
+              ))}
+            </select>
+            {filteredEmployees.map(employee => (
+                <div
+                    key={employee.id}
+                    className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
+                    onClick={() => handleEmployeeClick(employee)}
+                >
+                  {employee.name}
+                </div>
             ))}
           </div>
 
-          {filteredEmployees.map(employee => {
-            const vacation = vacations.find(v => v.employeeId === employee.id);
-            return (
-              <div key={employee.id} className="calendar-row">
-                {days.map(day => {
-                  const isVacation = vacation && 
-                    day >= vacation.startDay && 
-                    day <= vacation.endDay;
-                  return (
-                    <div
-                      key={day}
-                      className={`calendar-cell ${isVacation ? 'vacation' : ''}`}
-                    />
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
+          <div className="calendar-grid">
+            <div className="calendar-days">
+              {days.map(day => (
+                  <div key={day} className="calendar-day">
+                    {day}
+                  </div>
+              ))}
+            </div>
 
-        {selectedEmployee?.vacation && (
-          <div className="vacation-info">
-            <h3>{selectedEmployee.name}</h3>
-            <p>Причина: {selectedEmployee.vacation.reason}</p>
-            <p>Период: {selectedEmployee.vacation.startDay}-{selectedEmployee.vacation.endDay} {monthNames[month-1]} {year}</p>
+            {filteredEmployees.map(employee => {
+              const vacation = vacations.find(v => v.employeeId === employee.id);
+              return (
+                  <div key={employee.id} className="calendar-row">
+                    {days.map(day => {
+                      const isVacation = vacation &&
+                          day >= vacation.startDay &&
+                          day <= vacation.endDay;
+                      return (
+                          <div
+                              key={day}
+                              className={`calendar-cell ${isVacation ? 'vacation' : ''}`}
+                          />
+                      );
+                    })}
+                  </div>
+              );
+            })}
           </div>
-        )}
+
+          {selectedEmployee?.vacation && (
+              <div className="vacation-info">
+                <h3>{selectedEmployee.name}</h3>
+                <p>Причина: {selectedEmployee.vacation.reason}</p>
+                <p>Период: {selectedEmployee.vacation.startDay}-{selectedEmployee.vacation.endDay} {monthNames[month-1]} {year}</p>
+              </div>
+          )}
+        </div>
       </div>
-    </div>
   );
 };
 

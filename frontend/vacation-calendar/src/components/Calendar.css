@@ -51,7 +51,10 @@
 }
 
 .employees-list {
-  width: 200px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 300px;
 }
 
 .department-select {
@@ -64,19 +67,18 @@
 }
 
 .employee-name {
-  padding: 10px;
+  word-wrap: break-word;
+  white-space: normal;
+  padding: 5px 10px;
+  margin-bottom: 5px;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
-  transition: background-color 0.2s;
 }
-
 .employee-name:hover {
   background-color: #f5f5f5;
 }
 
 .employee-name.selected {
-  background-color: #e6e6fa;
-  font-weight: bold;
+  background-color: #f0f0f0;
 }
 
 .calendar-grid {
