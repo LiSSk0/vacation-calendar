@@ -79,15 +79,17 @@ const Calendar = ({
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
-            {filteredEmployees.map(employee => (
-                <div
-                    key={employee.id}
-                    className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
-                    onClick={() => handleEmployeeClick(employee)}
-                >
-                  {employee.name}
-                </div>
-            ))}
+            <div className="employee-rows">
+              {filteredEmployees.map(employee => (
+                  <div
+                      key={employee.id}
+                      className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
+                      onClick={() => handleEmployeeClick(employee)}
+                  >
+                    {employee.name}
+                  </div>
+              ))}
+            </div>
           </div>
 
           <div className="calendar-grid">
