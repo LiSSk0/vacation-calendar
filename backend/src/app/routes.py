@@ -86,7 +86,7 @@ def register_routes(app):
                 data.get('email'),
                 data.get('fromDate'),
                 data.get('toDate'),
-                data.get('department'),
+                1,# TODO РАЗОБРАТЬСЯ ПОЧЕМУ ТУТ ДОЛЖЕН БЫТЬ INT А С ФРОНТА ЕДУТ СТРИНГИ #data.get('department'),
                 data.get('reason')
             )
             return jsonify({'success': True})
