@@ -2,3 +2,5 @@ sqlalchemy
 werkzeug
 flask
 dotenv
+psycopg2
+flask_cors
