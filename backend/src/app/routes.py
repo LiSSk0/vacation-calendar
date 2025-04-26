@@ -154,8 +154,8 @@ def register_routes(app):
                 {
                     'id': vacation.id,
                     'email': vacation.email,
-                    'fromDate': vacation.from_date.isoformat(),
-                    'toDate': vacation.to_date.isoformat(),
+                    'fromDate': vacation.fromDate.isoformat(),
+                    'toDate': vacation.toDate.isoformat(),
                     'department': vacation.department,
                     'reason': vacation.reason,
                 }
