@@ -96,7 +96,8 @@ class DataBase:
     def add_auth(self, email, password):
         new_auth = AuthEntry(
             email=email,
-            password=generate_password_hash(password, method='pbkdf2:sha256')
+            #password=generate_password_hash(password, method='pbkdf2:sha256')
+            password=password
         )
         with Session(self.engine) as session:
             session.add(new_auth)
@@ -118,9 +119,43 @@ class DataBase:
             return users
 
     # Получение пользователя по почте
-    def find_user_by_email(self, email):
+    def find_name_by_email(self, email):
+        with Session(self.engine) as session:
+            return session.query(User).filter_by(email=email).first()
+
+    def find_password_by_email(self, email):
         with Session(self.engine) as session:
             return session.query(AuthEntry).filter_by(email=email).first()
+
+    # Получение отпусков за указанный месяц и год
+    def get_vacations(self, month, year):
+        with Session(self.engine) as session:
+            # Получаем все отпуска, которые пересекаются с указанным месяцем и годом
+            vacations = session.query(Vacation).filter(
+                sqlalchemy.or_(
+                    sqlalchemy.and_(
+                        sqlalchemy.extract('year', Vacation.fromDate) == year,
+                        sqlalchemy.extract('month', Vacation.fromDate) == month
+                    ),
+                    sqlalchemy.and_(
+                        sqlalchemy.extract('year', Vacation.toDate) == year,
+                        sqlalchemy.extract('month', Vacation.toDate) == month
+                    )
+                )
+            ).all()
+            return vacations
+
+    # Получение всех отделов
+    def get_departments(self):
+        with Session(self.engine) as session:
+            departments = session.query(Department).all()
+            return departments
+
+    # Получение отпусков по email пользователя
+    def get_vacations_by_email(self, email):
+        with Session(self.engine) as session:
+            vacations = session.query(Vacation).filter_by(email=email).all()
+            return vacations
 
     def print(self, table):
         with Session(self.engine) as session:
