@@ -2,15 +2,15 @@
 import React, { useState } from 'react';
 import './Calendar.css';
 
-const Calendar = ({ 
-  month, 
-  year, 
-  onMonthChange, 
-  onAddClick,
-  vacations,
-  departments,
-  employees
-}) => {
+const Calendar = ({
+                    month,
+                    year,
+                    onMonthChange,
+                    onAddClick,
+                    vacations,
+                    departments,
+                    employees
+                  }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,10 +32,10 @@ const Calendar = ({
   };
 
   const filteredEmployees = employees.filter(employee => {
-    const matchesDepartment = selectedDepartment === 'all' || 
-      employee.department === selectedDepartment;
-    const matchesSearch = searchQuery === '' || 
-      employee.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment = selectedDepartment === 'all' ||
+        employee.department === selectedDepartment;
+    const matchesSearch = searchQuery === '' ||
+        employee.name.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDepartment && matchesSearch;
   });
 
@@ -79,17 +79,15 @@ const Calendar = ({
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
-            <div className="employee-rows">
-              {filteredEmployees.map(employee => (
-                  <div
-                      key={employee.id}
-                      className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
-                      onClick={() => handleEmployeeClick(employee)}
-                  >
-                    {employee.name}
-                  </div>
-              ))}
-            </div>
+            {filteredEmployees.map(employee => (
+                <div
+                    key={employee.id}
+                    className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
+                    onClick={() => handleEmployeeClick(employee)}
+                >
+                  {employee.name}
+                </div>
+            ))}
           </div>
 
           <div className="calendar-grid">
