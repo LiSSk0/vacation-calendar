@@ -119,11 +119,12 @@ class DataBase:
             return users
 
     # Получение пользователя по почте
-    def find_name_by_email(self, email):
+    def get_name_by_email(self, email):
         with Session(self.engine) as session:
             return session.query(User).filter_by(email=email).first()
 
-    def find_password_by_email(self, email):
+    # Получение пароля по почте
+    def get_password_by_email(self, email):
         with Session(self.engine) as session:
             return session.query(AuthEntry).filter_by(email=email).first()
 

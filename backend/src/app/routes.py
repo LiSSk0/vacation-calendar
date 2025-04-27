@@ -35,31 +35,31 @@ def register_routes(app):
         try:
             data = request.get_json()
             email = data.get('email')
-            #print(type(data.get('password')))
-            #password=generate_password_hash(data.get('password'), method='pbkdf2:sha256')
-            #print(password)
+            # print(type(data.get('password')))
+            # password=generate_password_hash(data.get('password'), method='pbkdf2:sha256')
+            # print(password)
             password = data.get('password')
 
             # Проверка на наличие почты и пароля
             if not email or not password:
-                return jsonify({'success': False, 'error': 'Missing email or password'}), 400
+                return jsonify({'success': False, 'error': 'Отсутствует логин или пароль'}), 400
 
             # Получаем пользователя по почте из БД
-            user = app.db.find_name_by_email(email)
-            password_storage = app.db.find_password_by_email(email)
+            user = app.db.get_name_by_email(email)
+            password_storage = app.db.get_password_by_email(email)
 
 
             # Проверяем, что запрошенный пользователь есть в БД
             if not user:
-                return jsonify({'success': False, 'error': 'User not found'}), 404
+                return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
 
             # Проверяем, подходит ли пароль
             stored_password = password_storage.password
             print(stored_password)
 
-            #if not check_password_hash(stored_password, password):
+            # if not check_password_hash(stored_password, password):
             if stored_password != password:
-                return jsonify({'success': False, 'error': 'Invalid password'}), 401
+                return jsonify({'success': False, 'error': 'Неверный пароль'}), 401
 
             return jsonify({
                 'success': True,
@@ -94,6 +94,7 @@ def register_routes(app):
             print(f"# Ошибка при добавлении отпуска: {e}")
             return jsonify({'success': False, 'error': 'Ошибка сервера при добавлении отпуска'}), 500
 
+    # Регистрация нового пользователя
     @app.route('/api/register', methods=['POST'])
     def register():
         try:
@@ -104,17 +105,17 @@ def register_routes(app):
             surname = data.get('surname', '').strip()
             middlename = data.get('middlename', '').strip()
 
-            # базовая валидация
+            # Базовая валидация
             if not (email and password and name and surname and middlename):
-                return jsonify({'success': False, 'error': 'Missing fields'}), 400
+                return jsonify({'success': False, 'error': 'Введены неверные данные'}), 400
             if not is_valid_email(email):
-                return jsonify({'success': False, 'error': 'Invalid email'}), 400
+                return jsonify({'success': False, 'error': 'Неверная почта'}), 400
 
-            # проверяем, что пользователь ещё не существует
-            if app.db.find_name_by_email(email):
-                return jsonify({'success': False, 'error': 'User already exists'}), 409
+            # Проверяем, что пользователь ещё не существует
+            if app.db.get_name_by_email(email):
+                return jsonify({'success': False, 'error': 'Пользователь уже существует'}), 409
 
-            # создаём запись в users и auth
+            # Создаём запись в users и auth
             app.db.add_user(email, name, surname, middlename)
             app.db.add_auth(email, password)
 
@@ -130,10 +131,10 @@ def register_routes(app):
                     }
                 }), 201
         except Exception as e:
-            print(f"# Error in register: {e}")
-            return jsonify({'success': False, 'error': 'Server error'}), 500
+            print(f"# Ошибка при регистрации: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при регистрации пользователя'}), 500
 
-        # Получение списка отпусков
+    # Получение списка отпусков
     @app.route('/api/vacations', methods=['GET'])
     def get_vacations():
         try:
@@ -144,7 +145,7 @@ def register_routes(app):
             # Валидация параметров
             if not (month and year):
                 return jsonify({'success': False,
-                                'error': 'Month and year parameters are required'}), 400
+                                'error': 'Некорректные данные месяц/год'}), 400
 
             # Получаем отпуска из БД
             vacations = app.db.get_vacations(month, year)
@@ -189,4 +190,3 @@ def register_routes(app):
             print(f"# Ошибка при получении списка отделов: {e}")
             return jsonify({'success': False,
                             'error': 'Ошибка сервера при получении списка отделов'}), 500
-
