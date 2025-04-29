@@ -1,19 +1,35 @@
 // src/components/Calendar.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 
 const Calendar = ({
-                    month,
-                    year,
-                    onMonthChange,
-                    onAddClick,
-                    vacations,
-                    departments,
-                    employees
-                  }) => {
+  month,
+  year,
+  onMonthChange,
+  onAddClick,
+  vacations,
+  departments,
+  employees
+}) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [processedVacations, setProcessedVacations] = useState([]);
+
+  useEffect(() => {
+    const formattedVacations = vacations.map(vacation => {
+      const fromDate = new Date(vacation.fromDate);
+      const toDate = new Date(vacation.toDate);
+      
+      return {
+        ...vacation,
+        startDay: fromDate.getDate(),
+        endDay: toDate.getDate(),
+        employeeId: vacation.email
+      };
+    });
+    setProcessedVacations(formattedVacations);
+  }, [vacations]);
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -24,7 +40,7 @@ const Calendar = ({
   };
 
   const handleEmployeeClick = (employee) => {
-    const employeeVacation = vacations.find(v => v.employeeId === employee.id);
+    const employeeVacation = processedVacations.find(v => v.employeeId === employee.email);
     setSelectedEmployee({
       ...employee,
       vacation: employeeVacation
@@ -32,10 +48,10 @@ const Calendar = ({
   };
 
   const filteredEmployees = employees.filter(employee => {
-    const matchesDepartment = selectedDepartment === 'all' ||
-        employee.department === selectedDepartment;
-    const matchesSearch = searchQuery === '' ||
-        employee.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDepartment = selectedDepartment === 'all' || 
+      employee.department === selectedDepartment;
+    const matchesSearch = searchQuery === '' || 
+      `${employee.surname} ${employee.name}`.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesDepartment && matchesSearch;
   });
 
@@ -45,89 +61,91 @@ const Calendar = ({
   };
 
   return (
-      <div className="calendar-container">
-        <div className="calendar-header">
-          <div className="date-selector">
-            <input
-                type="month"
-                value={`${year}-${String(month).padStart(2, '0')}`}
-                onChange={handleMonthYearChange}
-            />
-          </div>
-          <div className="search-box">
-            <input
-                type="text"
-                placeholder="Введите запрос"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button className="add-vacation-btn" onClick={onAddClick}>
-            + Добавить информацию
+    <div className="calendar-container">
+      <div className="calendar-header">
+        <div className="header-left">
+          <input
+            type="month"
+            value={`${year}-${String(month).padStart(2, '0')}`}
+            onChange={handleMonthYearChange}
+          />
+          <select
+            value={selectedDepartment}
+            onChange={handleDepartmentChange}
+          >
+            <option value="all">Все отделы</option>
+            {departments.map(dept => (
+              <option key={dept.id} value={dept.id}>{dept.name}</option>
+            ))}
+          </select>
+        </div>
+        <div className="header-right">
+          <input
+            type="text"
+            placeholder="Поиск по ФИО"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button onClick={onAddClick}>
+            + Добавить отпуск
           </button>
         </div>
+      </div>
 
-        <div className="calendar-content">
-          <div className="employees-list">
-            <select
-                className="department-select"
-                value={selectedDepartment}
-                onChange={handleDepartmentChange}
-            >
-              <option value="all">Все отделы</option>
-              {departments.map(dept => (
-                  <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
-            {filteredEmployees.map(employee => (
-                <div
-                    key={employee.id}
-                    className={`employee-name ${selectedEmployee?.id === employee.id ? 'selected' : ''}`}
-                    onClick={() => handleEmployeeClick(employee)}
-                >
-                  {employee.name}
-                </div>
-            ))}
-          </div>
-
+      <div className="calendar-main">
+        <div className="calendar-grid-container">
           <div className="calendar-grid">
-            <div className="calendar-days">
-              {days.map(day => (
-                  <div key={day} className="calendar-day">
+            <div className="grid-header">
+              <div className="employee-header">  </div>
+              <div className="days-header">
+                {days.map(day => (
+                  <div key={day} className="day-header">
                     {day}
                   </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {filteredEmployees.map(employee => {
-              const vacation = vacations.find(v => v.employeeId === employee.id);
+              const vacation = processedVacations.find(v => v.employeeId === employee.email);
               return (
-                  <div key={employee.id} className="calendar-row">
+                <div 
+                  key={employee.email}
+                  className={`employee-row ${selectedEmployee?.email === employee.email ? 'selected' : ''}`}
+                  onClick={() => handleEmployeeClick(employee)}
+                >
+                  <div className="employee-name">
+                    {employee.surname} {employee.name}
+                  </div>
+                  <div className="days-row">
                     {days.map(day => {
-                      const isVacation = vacation &&
-                          day >= vacation.startDay &&
-                          day <= vacation.endDay;
+                      const isVacation = vacation && day >= vacation.startDay && day <= vacation.endDay;
                       return (
-                          <div
-                              key={day}
-                              className={`calendar-cell ${isVacation ? 'vacation' : ''}`}
-                          />
+                        <div
+                          key={day}
+                          className={`day-cell ${isVacation ? 'vacation' : ''}`}
+                        />
                       );
                     })}
                   </div>
+                </div>
               );
             })}
           </div>
-
-          {selectedEmployee?.vacation && (
-              <div className="vacation-info">
-                <h3>{selectedEmployee.name}</h3>
-                <p>Причина: {selectedEmployee.vacation.reason}</p>
-                <p>Период: {selectedEmployee.vacation.startDay}-{selectedEmployee.vacation.endDay} {monthNames[month-1]} {year}</p>
-              </div>
-          )}
         </div>
+
+        {selectedEmployee?.vacation && (
+          <div className="vacation-sidebar">
+            <h3>{selectedEmployee.surname} {selectedEmployee.name}</h3>
+            <div className="vacation-details">
+              <p><strong>Отдел:</strong> {departments.find(d => d.id === selectedEmployee.department)?.name}</p>
+              <p><strong>Период:</strong> {selectedEmployee.vacation.startDay} - {selectedEmployee.vacation.endDay} {monthNames[month-1]} {year}</p>
+              <p><strong>Причина:</strong> {selectedEmployee.vacation.reason}</p>
+            </div>
+          </div>
+        )}
       </div>
+    </div>
   );
 };
 

@@ -9,147 +9,162 @@
 .calendar-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
   gap: 15px;
   flex-wrap: wrap;
 }
 
-.date-selector input {
-  padding: 8px 15px;
+.calendar-header input[type="month"],
+.calendar-header select,
+.calendar-header input[type="text"] {
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 14px;
 }
 
-.search-box {
-  flex: 1;
-  max-width: 300px;
-}
-
-.search-box input {
-  width: 100%;
-  padding: 8px 15px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.add-vacation-btn {
-  background-color: #6b8e23;
+.calendar-header button {
+  background-color: #A7BD40;
   color: white;
   border: none;
-  padding: 8px 15px;
+  padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 1rem;
-  white-space: nowrap;
+  font-size: 14px;
 }
 
-.calendar-content {
+.calendar-main {
   display: flex;
   gap: 20px;
 }
 
-.employees-list {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  max-height: 300px;
-}
-
-.department-select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  font-size: 1rem;
-}
-
-.employee-name {
-  word-wrap: break-word;
-  white-space: normal;
-  padding: 5px 10px;
-  margin-bottom: 5px;
-  cursor: pointer;
-}
-.employee-name:hover {
-  background-color: #f5f5f5;
-}
-
-.employee-name.selected {
-  background-color: #f0f0f0;
-}
-
-.calendar-grid {
+.calendar-grid-container {
   flex: 1;
   overflow-x: auto;
 }
 
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(31, minmax(30px, 1fr));
-  margin-bottom: 10px;
-  min-width: 930px;
+.calendar-grid {
+  display: inline-block;
+  min-width: 100%;
+  border-collapse: collapse;
 }
 
-.calendar-day {
-  text-align: center;
-  padding: 5px;
-  font-size: 0.9rem;
+.grid-header {
+  display: flex;
   border-bottom: 1px solid #eee;
+  font-weight: bold;
+  background-color: #f9f9f9;
 }
 
-.calendar-row {
-  display: grid;
-  grid-template-columns: repeat(31, minmax(30px, 1fr));
+.employee-header {
+  width: 200px;
+  padding: 10px;
+  min-width: 200px;
+}
+
+.days-header {
+  display: flex;
+}
+
+.day-header {
+  width: 30px;
+  min-width: 30px;
+  padding: 10px 0;
+  text-align: center;
+  border-left: 1px solid #eee;
+}
+
+.employee-row {
+  display: flex;
   height: 40px;
-  margin-bottom: 5px;
-  min-width: 930px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
 }
 
-.calendar-cell {
-  border: 1px solid #eee;
+.employee-row:hover {
+  background-color: #f5f5f5;
 }
 
-.calendar-cell.vacation {
-  background-color: #6b8e23;
+.employee-row.selected {
+  background-color: #f0f0f0;
+}
+
+.employee-name {
+  width: 200px;
+  min-width: 200px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.days-row {
+  display: flex;
+}
+
+.day-cell {
+  width: 30px;
+  min-width: 30px;
+  height: 100%;
+  border-left: 1px solid #eee;
+}
+
+.day-cell.vacation {
+  background-color: #A7BD40;
   opacity: 0.7;
 }
 
-.vacation-info {
-  margin-top: 20px;
+.vacation-sidebar {
+  width: 300px;
   padding: 15px;
   background-color: #f9f9f9;
   border-radius: 5px;
   border-left: 4px solid #6b8e23;
 }
 
-.vacation-info h3 {
+.vacation-sidebar h3 {
   margin-top: 0;
+  margin-bottom: 15px;
   color: #333;
 }
 
-.vacation-info p {
-  margin-bottom: 0;
-  color: #666;
+.vacation-details p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.vacation-details strong {
+  color: #333;
+}
+
+@media (max-width: 1024px) {
+  .calendar-main {
+    flex-direction: column;
+  }
+  
+  .vacation-sidebar {
+    width: 100%;
+    margin-top: 20px;
+  }
 }
 
 @media (max-width: 768px) {
   .calendar-header {
     flex-direction: column;
-    align-items: flex-start;
+    gap: 10px;
   }
-
-  .search-box {
-    max-width: 100%;
+  
+  .header-left, .header-right {
+    width: 100%;
   }
-
-  .calendar-content {
-    flex-direction: column;
-  }
-
-  .employees-list {
+  
+  .calendar-header input[type="text"] {
     width: 100%;
   }
 }
