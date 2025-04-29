@@ -9,9 +9,7 @@ const ProfilePage = () => {
   const { user } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isVacationModalOpen, setIsVacationModalOpen] = useState(false);
-  const [vacations, setVacations] = useState([
-    { id: 1, fromDate: '2025-03-04', toDate: '2025-03-18', reason: 'отпуск по болезни' }
-  ]);
+  const [vacations, setVacations] = useState([]);
 
   const handleUpdateProfile = (updatedData) => {
     // Логика обновления профиля
@@ -87,7 +85,7 @@ const ProfilePage = () => {
             className="add-vacation-btn"
             onClick={() => setIsVacationModalOpen(true)}
           >
-            Добавить отпуск ▼
+            Добавить отпуск 
           </button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 /* Общие стили для страниц аутентификации и профиля */
 .auth-page {
-    max-width: 500px;
+    max-width: 600px;
     margin: 40px auto;
     padding: 30px;
     background-color: white;
@@ -39,7 +39,7 @@
   }
   
   .btn-primary {
-    background-color: #6b8e23;
+    background-color: #A7BD40;
     color: white;
     border: none;
     padding: 12px;
