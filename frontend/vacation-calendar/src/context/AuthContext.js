@@ -1,7 +1,6 @@
 // src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { login as apiLogin, register as apiRegister } from '../api';
-
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -58,8 +57,16 @@ export const AuthProvider = ({ children }) => {
     const storedUser = localStorage.getItem('user');
     
     if (token && storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Failed to parse user data:', err);
+        // Clear invalid data from storage
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      }
     }
     setLoading(false);
   }, []);
