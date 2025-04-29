@@ -8,15 +8,25 @@
 }
 
 body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--background-color);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
   color: var(--text-color);
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  
+  background: linear-gradient(
+    145deg,
+    #e1e8d9 0%,
+    #ABC270 30%,
+    #b5b867 70%,
+    #636f45 100%
+  );
 }
 
 .home-page {
   max-width: 1200px;
   margin: 20px auto;
-  padding: 0 20px;
+  padding: 20px;
 }
