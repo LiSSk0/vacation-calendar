@@ -1,4 +1,3 @@
-// src/components/Calendar.js
 import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 
@@ -16,24 +15,47 @@ const Calendar = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [processedVacations, setProcessedVacations] = useState([]);
 
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
   useEffect(() => {
     const formattedVacations = vacations.map(vacation => {
       const fromDate = new Date(vacation.fromDate);
       const toDate = new Date(vacation.toDate);
       
-      return {
-        ...vacation,
-        startDay: fromDate.getDate(),
-        endDay: toDate.getDate(),
-        employeeId: vacation.email
-      };
-    });
+      const fromYear = fromDate.getFullYear();
+      const fromMonth = fromDate.getMonth() + 1;
+      const toYear = toDate.getFullYear();
+      const toMonth = toDate.getMonth() + 1;
+
+      // Проверяем, пересекается ли отпуск с текущим месяцем
+      if (
+        (fromYear < year || (fromYear === year && fromMonth <= month)) && 
+        (toYear > year || (toYear === year && toMonth >= month))
+      ) {
+        // Определяем начальный день для отображения (либо 1-е число, либо день начала отпуска)
+        const startDay = (fromYear === year && fromMonth === month) ? 
+          fromDate.getDate() : 1;
+        
+        // Определяем конечный день для отображения (либо последний день месяца, либо день окончания отпуска)
+        const endDay = (toYear === year && toMonth === month) ? 
+          toDate.getDate() : daysInMonth;
+
+        return {
+          ...vacation,
+          startDay,
+          endDay,
+          employeeId: vacation.email,
+          isPartial: !(fromYear === year && fromMonth === month && toYear === year && toMonth === month)
+        };
+      }
+      return null;
+    }).filter(v => v !== null);
+
     setProcessedVacations(formattedVacations);
-  }, [vacations]);
+  }, [vacations, month, year, daysInMonth]);
 
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-
+  // Остальной код компонента остается без изменений
   const handleDepartmentChange = (e) => {
     setSelectedDepartment(e.target.value);
     setSelectedEmployee(null);
@@ -58,6 +80,15 @@ const Calendar = ({
   const handleMonthYearChange = (e) => {
     const [newYear, newMonth] = e.target.value.split('-');
     onMonthChange(parseInt(newMonth), parseInt(newYear));
+  };
+
+  // Форматирование даты для отображения в сайдбаре
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const month = date.toLocaleString('ru-RU', { month: 'long' });
+    const year = date.getFullYear();
+    return `${day} ${month} ${year}`;
   };
 
   return (
@@ -96,7 +127,7 @@ const Calendar = ({
         <div className="calendar-grid-container">
           <div className="calendar-grid">
             <div className="grid-header">
-              <div className="employee-header">  </div>
+              <div className="employee-header">Сотрудник</div>
               <div className="days-header">
                 {days.map(day => (
                   <div key={day} className="day-header">
@@ -107,7 +138,7 @@ const Calendar = ({
             </div>
 
             {filteredEmployees.map(employee => {
-              const vacation = processedVacations.find(v => v.employeeId === employee.email);
+              const employeeVacations = processedVacations.filter(v => v.employeeId === employee.email);
               return (
                 <div 
                   key={employee.email}
@@ -119,11 +150,21 @@ const Calendar = ({
                   </div>
                   <div className="days-row">
                     {days.map(day => {
-                      const isVacation = vacation && day >= vacation.startDay && day <= vacation.endDay;
+                      // Проверяем все отпуска сотрудника
+                      const isVacationDay = employeeVacations.some(vacation => 
+                        day >= vacation.startDay && day <= vacation.endDay
+                      );
+                      const isStart = employeeVacations.some(vacation => 
+                        day === vacation.startDay && !vacation.isPartial
+                      );
+                      const isEnd = employeeVacations.some(vacation => 
+                        day === vacation.endDay && !vacation.isPartial
+                      );
+
                       return (
                         <div
                           key={day}
-                          className={`day-cell ${isVacation ? 'vacation' : ''}`}
+                          className={`day-cell ${isVacationDay ? 'vacation' : ''} ${isStart ? 'vacation-start' : ''} ${isEnd ? 'vacation-end' : ''}`}
                         />
                       );
                     })}
@@ -139,7 +180,7 @@ const Calendar = ({
             <h3>{selectedEmployee.surname} {selectedEmployee.name}</h3>
             <div className="vacation-details">
               <p><strong>Отдел:</strong> {departments.find(d => d.id === selectedEmployee.department)?.name}</p>
-              <p><strong>Период:</strong> {selectedEmployee.vacation.startDay} - {selectedEmployee.vacation.endDay} {monthNames[month-1]} {year}</p>
+              <p><strong>Период:</strong> {formatDate(selectedEmployee.vacation.fromDate)} - {formatDate(selectedEmployee.vacation.toDate)}</p>
               <p><strong>Причина:</strong> {selectedEmployee.vacation.reason}</p>
             </div>
           </div>
@@ -148,10 +189,5 @@ const Calendar = ({
     </div>
   );
 };
-
-const monthNames = [
-  'Января', 'Февраля', 'Марта', 'Апреля', 'Мая', 'Июня',
-  'Июля', 'Августа', 'Сентября', 'Октября', 'Ноября', 'Декабря'
-];
 
 export default Calendar;
