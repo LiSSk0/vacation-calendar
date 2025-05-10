@@ -1,6 +1,6 @@
-// src/context/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { login as apiLogin, register as apiRegister } from '../api';
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -8,6 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [passwordHint, setPasswordHint] = useState('');
 
   const login = async (credentials) => {
     try {
@@ -17,9 +19,18 @@ export const AuthProvider = ({ children }) => {
       setIsAuthenticated(true);
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(user));
+      setFailedAttempts(0); // Сброс счетчика при успешном входе
+      setPasswordHint(''); // Очистка подсказки
       return true;
     } catch (err) {
       setError(err.message);
+      setFailedAttempts(prev => prev + 1);
+      
+      // Сохраняем подсказку после первой неудачной попытки
+      if (failedAttempts === 0 && credentials.password.length > 2) {
+        setPasswordHint(`Подсказка: первые символы пароля - ${credentials.password.substring(0, 3)}`);
+      }
+      
       return false;
     }
   };
@@ -58,9 +69,16 @@ export const AuthProvider = ({ children }) => {
     
     if (token && storedUser) {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-        setIsAuthenticated(true);
+        // Check if storedUser is not null or undefined before parsing
+        if (storedUser && storedUser !== 'undefined') {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        } else {
+          // Clear invalid data
+          localStorage.removeItem('user');
+          localStorage.removeItem('token');
+        }
       } catch (err) {
         console.error('Failed to parse user data:', err);
         // Clear invalid data from storage
@@ -70,13 +88,14 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, []);
-
-  return (
+  
+ return (
     <AuthContext.Provider value={{ 
       user, 
       isAuthenticated, 
       loading,
       error,
+      passwordHint, // Добавляем подсказку в контекст
       login, 
       logout, 
       register,
