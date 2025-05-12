@@ -91,3 +91,87 @@ export const addVacation = async (vacationData) => {
   
   return await response.json();
 };
+
+// Получение отпусков конкретного пользователя
+export const getVacationsByUser = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/vacations?email=${email}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при загрузке отпусков пользователя');
+  }
+  
+  return await response.json();
+};
+
+// Получение информации о пользователе
+export const getUserProfile = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/users/${email}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при загрузке профиля пользователя');
+  }
+  
+  return await response.json();
+};
+
+// Обновление профиля пользователя
+export const updateUserProfile = async (email, profileData) => {
+  const response = await fetch(`${API_BASE_URL}/users/${email}`, {
+    method: 'PUT',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify(profileData)
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при обновлении профиля');
+  }
+  
+  return await response.json();
+};
+export const deleteAccount = async (email) => {
+  const response = await fetch(`${API_BASE_URL}/users/${email}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при удалении аккаунта');
+  }
+  
+  return await response.json();
+};
+
+export const updateProfile = async (userData) => {
+  const response = await fetch(`${API_BASE_URL}/users/${userData.email}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${localStorage.getItem('token')}`
+    },
+    body: JSON.stringify(userData)
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при обновлении профиля');
+  }
+
+  return await response.json();
+};

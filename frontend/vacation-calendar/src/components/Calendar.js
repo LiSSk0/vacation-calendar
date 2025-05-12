@@ -20,33 +20,31 @@ const Calendar = ({
 
   useEffect(() => {
     const formattedVacations = vacations.map(vacation => {
-      const fromDate = new Date(vacation.fromDate);
-      const toDate = new Date(vacation.toDate);
+      // Унифицируем получение дат
+      const startDate = new Date(vacation.startDate || vacation.fromDate);
+      const endDate = new Date(vacation.endDate || vacation.toDate);
       
-      const fromYear = fromDate.getFullYear();
-      const fromMonth = fromDate.getMonth() + 1;
-      const toYear = toDate.getFullYear();
-      const toMonth = toDate.getMonth() + 1;
+      const startYear = startDate.getFullYear();
+      const startMonth = startDate.getMonth() + 1;
+      const endYear = endDate.getFullYear();
+      const endMonth = endDate.getMonth() + 1;
 
-      // Проверяем, пересекается ли отпуск с текущим месяцем
       if (
-        (fromYear < year || (fromYear === year && fromMonth <= month)) && 
-        (toYear > year || (toYear === year && toMonth >= month))
+        (startYear < year || (startYear === year && startMonth <= month)) && 
+        (endYear > year || (endYear === year && endMonth >= month))
       ) {
-        // Определяем начальный день для отображения (либо 1-е число, либо день начала отпуска)
-        const startDay = (fromYear === year && fromMonth === month) ? 
-          fromDate.getDate() : 1;
+        const startDay = (startYear === year && startMonth === month) ? 
+          startDate.getDate() : 1;
         
-        // Определяем конечный день для отображения (либо последний день месяца, либо день окончания отпуска)
-        const endDay = (toYear === year && toMonth === month) ? 
-          toDate.getDate() : daysInMonth;
+        const endDay = (endYear === year && endMonth === month) ? 
+          endDate.getDate() : daysInMonth;
 
         return {
           ...vacation,
           startDay,
           endDay,
           employeeId: vacation.email,
-          isPartial: !(fromYear === year && fromMonth === month && toYear === year && toMonth === month)
+          isPartial: !(startYear === year && startMonth === month && endYear === year && endMonth === month)
         };
       }
       return null;
@@ -54,8 +52,6 @@ const Calendar = ({
 
     setProcessedVacations(formattedVacations);
   }, [vacations, month, year, daysInMonth]);
-
-  // Остальной код компонента остается без изменений
   const handleDepartmentChange = (e) => {
     setSelectedDepartment(e.target.value);
     setSelectedEmployee(null);
@@ -138,7 +134,9 @@ const Calendar = ({
             </div>
 
             {filteredEmployees.map(employee => {
-              const employeeVacations = processedVacations.filter(v => v.employeeId === employee.email);
+  const employeeVacations = processedVacations.filter(v => 
+    v.employeeId === employee.email || v.email === employee.email
+  );
               return (
                 <div 
                   key={employee.email}

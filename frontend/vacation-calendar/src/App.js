@@ -6,6 +6,7 @@ import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
 import Navbar from './components/Navbar';
 import { AuthProvider } from './context/AuthContext';
+import './styles/global.css';
 
 function App() {
   return (

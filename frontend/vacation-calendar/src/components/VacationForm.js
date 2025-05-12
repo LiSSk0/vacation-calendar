@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 
-const VacationForm = ({ onSubmit }) => {
+const VacationForm = ({ onSubmit, user }) => {
   const [formData, setFormData] = useState({
-    fromDate: '',
-    toDate: '',
-    reason: ''
+    startDate: '',
+    endDate: '',
+    reason: '',
+    department: user?.department || ''
   });
 
   const handleChange = (e) => {
@@ -21,38 +22,42 @@ const VacationForm = ({ onSubmit }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="vacation-form">
       <div className="form-group">
         <label>ФИО</label>
-        <input type="text" disabled value="Текущий пользователь" />
+        <input 
+          type="text" 
+          disabled 
+          value={user ? `${user.surname} ${user.name}` : 'Текущий пользователь'} 
+        />
       </div>
       
       <div className="form-group">
         <label>E-mail</label>
-        <input type="email" disabled value="it_is_your@mail.ru" />
+        <input 
+          type="email" 
+          disabled 
+          value={user?.email || 'it_is_your@mail.ru'} 
+        />
       </div>
       
       <div className="form-group">
         <label>Отдел</label>
-        <select
-          name="department"
-          value={formData.department}
-          onChange={handleChange}
-        >
-          <option value="1">Отдел разработки</option>
-          <option value="2">Отдел тестирования</option>
-          <option value="3">Отдел маркетинга</option>
-          <option value="4">HR отдел</option>
-        </select>
+        <input
+          type="text"
+          disabled
+          value={user?.department || 'Не указан'}
+        />
       </div>
       
       <div className="form-group">
         <label>Дата начала</label>
         <input
           type="date"
-          name="fromDate"
-          value={formData.fromDate}
+          name="startDate"
+          value={formData.startDate}
           onChange={handleChange}
+          min={new Date().toISOString().split('T')[0]}
           required
         />
       </div>
@@ -61,9 +66,10 @@ const VacationForm = ({ onSubmit }) => {
         <label>Дата окончания</label>
         <input
           type="date"
-          name="toDate"
-          value={formData.toDate}
+          name="endDate"
+          value={formData.endDate}
           onChange={handleChange}
+          min={formData.startDate || new Date().toISOString().split('T')[0]}
           required
         />
       </div>

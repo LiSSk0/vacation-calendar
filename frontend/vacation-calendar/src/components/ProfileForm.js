@@ -7,23 +7,32 @@ const ProfileForm = ({ user, onSubmit }) => {
     position: user.position || '',
     department: user.department || ''
   });
+  const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    updateUser(formData);
-    onSubmit(formData);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!formData.department) {
+    setError('Отдел обязателен для заполнения');
+    return;
+  }
+    
+    try {
+      await updateUser(formData);
+      onSubmit(formData);
+    } catch (err) {
+      setError(err.message || 'Ошибка при обновлении профиля');
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
+      {error && <div className="error-message">{error}</div>}
+      
       <div className="form-group">
         <label>Должность</label>
         <input
@@ -31,6 +40,7 @@ const ProfileForm = ({ user, onSubmit }) => {
           name="position"
           value={formData.position}
           onChange={handleChange}
+          placeholder="Введите должность"
         />
       </div>
       
@@ -51,7 +61,12 @@ const ProfileForm = ({ user, onSubmit }) => {
       </div>
       
       <div className="form-actions">
-        <button type="submit" className="submit-btn">Сохранить</button>
+        <button type="button" className="btn-secondary" onClick={() => onSubmit(null)}>
+          Отмена
+        </button>
+        <button type="submit" className="btn-primary">
+          Сохранить
+        </button>
       </div>
     </form>
   );

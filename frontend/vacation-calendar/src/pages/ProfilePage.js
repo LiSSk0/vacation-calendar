@@ -1,58 +1,157 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../components/Modal';
 import ProfileForm from '../components/ProfileForm';
 import VacationForm from '../components/VacationForm';
 import './AuthProfile.css';
 
 const ProfilePage = () => {
-  const { user } = useAuth();
+  const { user, deleteAccount, logout, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isVacationModalOpen, setIsVacationModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [vacations, setVacations] = useState([]);
+  const [nearestVacation, setNearestVacation] = useState(null);
+  const [daysUntilVacation, setDaysUntilVacation] = useState(null);
+  const [currentVacation, setCurrentVacation] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleUpdateProfile = (updatedData) => {
-    // Логика обновления профиля
-    setIsProfileModalOpen(false);
+  useEffect(() => {
+    const loadVacations = () => {
+      try {
+        const savedVacations = JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || [];
+        
+        // Нормализуем формат дат
+        const normalizedVacations = savedVacations.map(v => ({
+          ...v,
+          startDate: v.startDate || v.fromDate,
+          endDate: v.endDate || v.toDate
+        }));
+
+        setVacations(normalizedVacations);
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
+        // Находим текущий отпуск
+        const current = normalizedVacations.find(v => {
+          const start = new Date(v.startDate);
+          const end = new Date(v.endDate);
+          return now >= start && now <= end;
+        });
+
+        if (current) {
+          setCurrentVacation(current);
+          return;
+        }
+
+        // Находим ближайший отпуск
+        const upcoming = normalizedVacations
+          .filter(v => new Date(v.startDate) > now)
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+        if (upcoming.length > 0) {
+          const nearest = upcoming[0];
+          setNearestVacation(nearest);
+          const daysDiff = Math.ceil((new Date(nearest.startDate) - now) / (1000 * 60 * 60 * 24));
+          setDaysUntilVacation(daysDiff);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки отпусков:', error);
+      }
+    };
+
+    if (user?.email) {
+      loadVacations();
+    }
+  }, [user]);
+
+  const handleUpdateProfile = async (updatedData) => {
+    try {
+      await updateUser(updatedData);
+      setIsProfileModalOpen(false);
+    } catch (error) {
+      console.error('Ошибка обновления профиля:', error);
+    }
   };
 
   const handleAddVacation = (vacationData) => {
     const newVacation = {
-      id: vacations.length + 1,
-      ...vacationData
+      id: Date.now(),
+      startDate: vacationData.startDate,
+      endDate: vacationData.endDate,
+      reason: vacationData.reason,
+      email: user.email,
+      department: user.department
     };
-    setVacations([...vacations, newVacation]);
+
+    const updatedVacations = [...vacations, newVacation];
+    localStorage.setItem(`vacations_${user.email}`, JSON.stringify(updatedVacations));
+    
+    setVacations(updatedVacations);
+    
+    // Обновляем статус отпуска
+    const now = new Date();
+    const startDate = new Date(newVacation.startDate);
+    const endDate = new Date(newVacation.endDate);
+
+    if (now >= startDate && now <= endDate) {
+      setCurrentVacation(newVacation);
+      setNearestVacation(null);
+    } else if (startDate > now && (!nearestVacation || startDate < new Date(nearestVacation.startDate))) {
+      setNearestVacation(newVacation);
+      setDaysUntilVacation(Math.ceil((startDate - now) / (1000 * 60 * 60 * 24)));
+    }
+
     setIsVacationModalOpen(false);
+  };
+  const handleDeleteAccount = async () => {
+    setDeleteError('');
+    setIsDeleting(true);
+    try {
+      // Удаляем данные об отпусках
+      localStorage.removeItem(`vacations_${user.email}`);
+      
+      await deleteAccount();
+      logout();
+      navigate('/');
+    } catch (error) {
+      setDeleteError(error.message);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('ru-RU', options);
   };
 
   return (
     <div className="profile-page">
       <div className="profile-section">
         <h1>Мой профиль</h1>
-        
         <div className="profile-card">
           <h2>Личные данные</h2>
-          
           <div className="profile-field">
             <h3>Имя</h3>
             <p>{user.name}</p>
           </div>
-          
           <div className="profile-field">
             <h3>Email</h3>
             <p>{user.email}</p>
           </div>
-          
           <div className="profile-field">
             <h3>Должность</h3>
             <p>{user.position || 'Не указана'}</p>
           </div>
-          
           <div className="profile-field">
             <h3>Отдел</h3>
             <p>{user.department || 'Не указан'}</p>
           </div>
-          
           <button 
             className="edit-profile-btn"
             onClick={() => setIsProfileModalOpen(true)}
@@ -63,16 +162,35 @@ const ProfilePage = () => {
       </div>
 
       <div className="vacations-section">
-        <h2>Общая информация</h2>
-        
+        <h2>Информация об отпусках</h2>
         <div className="vacations-card">
-          <h3>Следующие отпуска:</h3>
-          
+          {currentVacation ? (
+            <div className="vacation-status current">
+              <h3>Вы в отпуске!</h3>
+              <p>Период: {formatDate(currentVacation.startDate)} - {formatDate(currentVacation.endDate)}</p>
+              <p>Причина: {currentVacation.reason}</p>
+            </div>
+          ) : nearestVacation ? (
+            <div className="vacation-status upcoming">
+              <h3>Ближайший отпуск</h3>
+              <p>Период: {formatDate(nearestVacation.startDate)} - {formatDate(nearestVacation.endDate)}</p>
+              <p>Причина: {nearestVacation.reason}</p>
+              <div className="days-counter">
+                До отпуска: {daysUntilVacation} {daysUntilVacation === 1 ? 'день' : daysUntilVacation < 5 ? 'дня' : 'дней'}
+              </div>
+            </div>
+          ) : (
+            <div className="vacation-status none">
+              <h3>Нет запланированных отпусков</h3>
+            </div>
+          )}
+
+          <h3>Все отпуска:</h3>
           {vacations.length > 0 ? (
             <ul className="vacations-list">
               {vacations.map(vacation => (
                 <li key={vacation.id}>
-                  <strong>{vacation.fromDate} - {vacation.toDate}</strong>
+                  <strong>{formatDate(vacation.startDate)} - {formatDate(vacation.endDate)}</strong>
                   <p>Причина: {vacation.reason}</p>
                 </li>
               ))}
@@ -85,10 +203,51 @@ const ProfilePage = () => {
             className="add-vacation-btn"
             onClick={() => setIsVacationModalOpen(true)}
           >
-            Добавить отпуск 
+            Добавить отпуск
           </button>
         </div>
       </div>
+
+      <div className="danger-zone">
+        <h2>Удалить аккаунт</h2>
+        <div className="danger-zone-content">
+          <p>Удаление аккаунта приведет к потере всех данных.</p>
+          <button 
+            className="btn-danger"
+            onClick={() => setIsDeleteModalOpen(true)}
+            disabled={isDeleting}
+          >
+            Удалить
+          </button>
+        </div>
+      </div>
+
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => !isDeleting && setIsDeleteModalOpen(false)}
+        title="Подтверждение удаления"
+      >
+        <div className="delete-confirmation">
+          <p>Вы уверены, что хотите удалить аккаунт? Это действие нельзя отменить.</p>
+          {deleteError && <div className="error-message">{deleteError}</div>}
+          <div className="modal-actions">
+            <button 
+              className="btn-secondary"
+              onClick={() => setIsDeleteModalOpen(false)}
+              disabled={isDeleting}
+            >
+              Отмена
+            </button>
+            <button 
+              className="btn-danger"
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Удаление...' : 'Да, удалить'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal 
         isOpen={isProfileModalOpen} 
@@ -107,6 +266,7 @@ const ProfilePage = () => {
         title="Добавить отпуск"
       >
         <VacationForm 
+          user={user}
           onSubmit={handleAddVacation} 
         />
       </Modal>

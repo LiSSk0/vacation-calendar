@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [passwordHint, setPasswordHint] = useState('');
+  const [vacations, setVacations] = useState([]);
 
   const login = async (credentials) => {
     try {
@@ -62,7 +63,17 @@ export const AuthProvider = ({ children }) => {
     setUser(updatedUser);
     localStorage.setItem('user', JSON.stringify(updatedUser));
   };
+const addVacation = (vacation) => {
+  const newVacations = [...vacations, vacation];
+  setVacations(newVacations);
+  localStorage.setItem(`vacations_${user.email}`, JSON.stringify(newVacations));
+};
 
+const deleteVacation = (vacationId) => {
+  const newVacations = vacations.filter(v => v.id !== vacationId);
+  setVacations(newVacations);
+  localStorage.setItem(`vacations_${user.email}`, JSON.stringify(newVacations));
+};
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
@@ -89,9 +100,12 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
   
- return (
-    <AuthContext.Provider value={{ 
-      user, 
+return (
+  <AuthContext.Provider value={{ 
+    user,
+    vacations,
+    addVacation,
+    deleteVacation, 
       isAuthenticated, 
       loading,
       error,

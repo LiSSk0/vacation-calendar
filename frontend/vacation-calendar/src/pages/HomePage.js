@@ -1,9 +1,9 @@
-// src/pages/HomePage.js
 import React, { useState, useEffect } from 'react';
 import Calendar from '../components/Calendar';
 import AddVacationModal from '../components/AddVacationModal';
 import { useAuth } from '../context/AuthContext';
 import { getVacations, getDepartments, getUsers, addVacation } from '../api';
+import './AuthProfile.css';
 
 const HomePage = () => {
   const currentDate = new Date();
@@ -17,20 +17,33 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Загрузка данных при монтировании и изменении месяца/года
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        const [vacationsData, departmentsData, usersData] = await Promise.all([
+        const [apiVacations, departmentsData, usersData] = await Promise.all([
           getVacations(month, year),
           getDepartments(),
           getUsers()
         ]);
 
-        // Обработка данных о сотрудниках
+        // Загружаем из localStorage и объединяем с API
+        const localVacations = user?.email 
+          ? JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || []
+          : [];
+
+        const allVacations = [...apiVacations, ...localVacations];
+        const uniqueVacations = allVacations.reduce((acc, current) => {
+          const x = acc.find(item => item.id === current.id);
+          return x ? acc : [...acc, {
+            ...current,
+            startDate: current.startDate || current.fromDate,
+            endDate: current.endDate || current.toDate
+          }];
+        }, []);
+
         const processedEmployees = usersData.map(user => ({
           id: user.email,
           email: user.email,
@@ -39,7 +52,7 @@ const HomePage = () => {
           department: user.department || 1
         }));
 
-        setVacations(vacationsData);
+        setVacations(uniqueVacations);
         setDepartments(departmentsData);
         setEmployees(processedEmployees);
       } catch (err) {
@@ -51,43 +64,45 @@ const HomePage = () => {
     };
 
     fetchData();
-  }, [month, year]);
+  }, [month, year, user]);
 
-  // Обработчик изменения месяца/года
   const handleMonthChange = (newMonth, newYear) => {
     setMonth(newMonth);
     setYear(newYear);
   };
 
-  // Добавление нового отпуска
   const handleAddVacation = async (vacationData) => {
     try {
-      if (!user?.email) {
-        throw new Error('Пользователь не авторизован');
-      }
-
-      if (!user.department) {
-        throw new Error('Для добавления отпуска укажите отдел в профиле');
-      }
-
-      const newVacation = await addVacation({
+      if (!user?.email) throw new Error('Пользователь не авторизован');
+      
+      const newVacation = {
+        id: Date.now(),
         email: user.email,
-        fromDate: vacationData.startDate,
-        toDate: vacationData.endDate,
+        startDate: vacationData.startDate,
+        endDate: vacationData.endDate,
         department: user.department,
-        reason: vacationData.reason
-      });
+        reason: vacationData.reason,
+        // Дублируем для API
+        fromDate: vacationData.startDate,
+        toDate: vacationData.endDate
+      };
 
-      // Обновляем список отпусков
+      await addVacation(newVacation);
+      
+      // Сохраняем в localStorage
+      const localVacations = JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || [];
+      localStorage.setItem(
+        `vacations_${user.email}`,
+        JSON.stringify([...localVacations, newVacation])
+      );
+
       setVacations(prev => [...prev, newVacation]);
       setIsAddModalOpen(false);
     } catch (err) {
       setError(err.message);
-      alert(`Ошибка: ${err.message}`);
     }
   };
 
-  // Проверка авторизации перед открытием модального окна
   const handleAddClick = () => {
     if (!user) {
       alert('Для добавления отпуска необходимо авторизоваться');
