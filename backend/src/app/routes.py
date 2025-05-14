@@ -190,3 +190,19 @@ def register_routes(app):
             print(f"# Ошибка при получении списка отделов: {e}")
             return jsonify({'success': False,
                             'error': 'Ошибка сервера при получении списка отделов'}), 500
+
+
+    @app.route('/api/users/<email>', methods=['DELETE'])
+    def delete_user(email):
+        try:
+            if not app.db.get_name_by_email(email):
+                return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
+
+            if app.db.delete_user(email):
+                return jsonify({'success': True}), 200
+            else:
+                return jsonify({'success': False, 'error': 'Ошибка при удалении пользователя'}), 500
+        except Exception as e:
+            print(f"# Ошибка при удалении пользователя: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при удалении пользователя'}), 500
+

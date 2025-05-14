@@ -174,3 +174,35 @@ class DataBase:
                     print("\t".join(str(value) for value in row))
             else:
                 print("# Нет данных в таблице.")
+
+    def delete_user(self, email):
+        with Session(self.engine) as session:
+            try:
+                # Начинаем транзакцию
+                session.begin()
+
+                # 1. Удаляем все отпуска пользователя (более эффективный способ)
+                session.query(Vacation).filter(Vacation.email == email).delete(
+                    synchronize_session=False
+                )
+
+                # 2. Удаляем запись аутентификации
+                session.query(AuthEntry).filter(AuthEntry.email == email).delete(
+                    synchronize_session=False
+                )
+
+                # 3. Удаляем самого пользователя
+                session.query(User).filter(User.email == email).delete(
+                    synchronize_session=False
+                )
+
+                # Фиксируем изменения
+                session.commit()
+                return True
+
+            except Exception as e:
+                # Откатываем изменения при ошибке
+                session.rollback()
+                print(f"Ошибка при удалении пользователя: {e}")
+                return False
+
