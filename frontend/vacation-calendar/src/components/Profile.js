@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { DEPARTMENTS } from './constants';
 
-const Profile = ({ user, onUpdateProfile, departments }) => {
+const Profile = ({ user, onUpdateProfile }) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     position: user?.position || '',
-    department: user?.department || departments[0]?.id || '',
+    department: user?.department || DEPARTMENTS[0]?.id || '',
     image: null
   });
 
@@ -43,7 +44,7 @@ const Profile = ({ user, onUpdateProfile, departments }) => {
           {user?.department && (
             <p>
               <strong>Отдел:</strong> {
-                departments.find(d => d.id === user.department)?.name || 'Не указан'
+                DEPARTMENTS.find(d => d.id === user.department)?.name || 'Не указан'
               }
             </p>
           )}
@@ -68,7 +69,7 @@ const Profile = ({ user, onUpdateProfile, departments }) => {
               value={formData.department}
               onChange={handleChange}
             >
-              {departments.map(dept => (
+              {DEPARTMENTS.map(dept => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>

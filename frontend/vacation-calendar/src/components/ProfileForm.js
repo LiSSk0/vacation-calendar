@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { DEPARTMENTS } from './constants';
 
 const ProfileForm = ({ user, onSubmit }) => {
   const { updateUser } = useAuth();
   const [formData, setFormData] = useState({
     position: user.position || '',
-    department: user.department || ''
+    department: user.department || DEPARTMENTS[0]?.id || ''
   });
   const [error, setError] = useState('');
 
@@ -15,11 +16,11 @@ const ProfileForm = ({ user, onSubmit }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (!formData.department) {
-    setError('Отдел обязателен для заполнения');
-    return;
-  }
+    e.preventDefault();
+    if (!formData.department) {
+      setError('Отдел обязателен для заполнения');
+      return;
+    }
     
     try {
       await updateUser(formData);
@@ -53,10 +54,9 @@ const ProfileForm = ({ user, onSubmit }) => {
           required
         >
           <option value="">Выберите отдел</option>
-          <option value="dev">Разработка</option>
-          <option value="qa">Тестирование</option>
-          <option value="marketing">Маркетинг</option>
-          <option value="hr">HR</option>
+          {DEPARTMENTS.map(dept => (
+            <option key={dept.id} value={dept.id}>{dept.name}</option>
+          ))}
         </select>
       </div>
       

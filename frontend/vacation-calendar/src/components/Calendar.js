@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Calendar.css';
+import { DEPARTMENTS } from './constants';
 
 const Calendar = ({
                     month,
@@ -7,7 +8,6 @@ const Calendar = ({
                     onMonthChange,
                     onAddClick,
                     vacations,
-                    departments,
                     employees
                   }) => {
   const [selectedDepartment, setSelectedDepartment] = useState('all');
@@ -78,7 +78,6 @@ const Calendar = ({
     onMonthChange(parseInt(newMonth), parseInt(newYear));
   };
 
-  // Форматирование даты для отображения в сайдбаре
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const day = date.getDate();
@@ -101,7 +100,7 @@ const Calendar = ({
                 onChange={handleDepartmentChange}
             >
               <option value="all">Все отделы</option>
-              {departments.map(dept => (
+              {DEPARTMENTS.map(dept => (
                   <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
@@ -148,7 +147,6 @@ const Calendar = ({
                       </div>
                       <div className="days-row">
                         {days.map(day => {
-                          // Проверяем все отпуска сотрудника
                           const isVacationDay = employeeVacations.some(vacation =>
                               day >= vacation.startDay && day <= vacation.endDay
                           );
@@ -177,7 +175,7 @@ const Calendar = ({
               <div className="vacation-sidebar">
                 <h3>{selectedEmployee.surname} {selectedEmployee.name}</h3>
                 <div className="vacation-details">
-                  <p><strong>Отдел:</strong> {departments.find(d => d.id === selectedEmployee.department)?.name}</p>
+                  <p><strong>Отдел:</strong> {DEPARTMENTS.find(d => d.id === selectedEmployee.department)?.name}</p>
                   <p><strong>Период:</strong> {formatDate(selectedEmployee.vacation.fromDate)} - {formatDate(selectedEmployee.vacation.toDate)}</p>
                   <p><strong>Причина:</strong> {selectedEmployee.vacation.reason}</p>
                 </div>
