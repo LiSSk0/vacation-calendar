@@ -7,7 +7,7 @@ import VacationForm from '../components/VacationForm';
 import './AuthProfile.css';
 
 const ProfilePage = () => {
-  const { user, deleteAccount, logout, updateUser } = useAuth();
+  const { user, updateUser, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isVacationModalOpen, setIsVacationModalOpen] = useState(false);
@@ -18,13 +18,12 @@ const ProfilePage = () => {
   const [currentVacation, setCurrentVacation] = useState(null);
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  
 
   useEffect(() => {
     const loadVacations = () => {
       try {
         const savedVacations = JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || [];
-        
-        // Нормализуем формат дат
         const normalizedVacations = savedVacations.map(v => ({
           ...v,
           startDate: v.startDate || v.fromDate,
@@ -36,7 +35,6 @@ const ProfilePage = () => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
-        // Находим текущий отпуск
         const current = normalizedVacations.find(v => {
           const start = new Date(v.startDate);
           const end = new Date(v.endDate);
@@ -48,7 +46,6 @@ const ProfilePage = () => {
           return;
         }
 
-        // Находим ближайший отпуск
         const upcoming = normalizedVacations
           .filter(v => new Date(v.startDate) > now)
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
@@ -93,7 +90,6 @@ const ProfilePage = () => {
     
     setVacations(updatedVacations);
     
-    // Обновляем статус отпуска
     const now = new Date();
     const startDate = new Date(newVacation.startDate);
     const endDate = new Date(newVacation.endDate);
@@ -108,16 +104,47 @@ const ProfilePage = () => {
 
     setIsVacationModalOpen(false);
   };
+
+  const handleDeleteVacation = async (vacationId) => {
+  try {
+    setDeleteError('');
+    setIsDeleting(true);
+    
+    // Удаляем из базы данных
+    const response = await fetch(`http://localhost:5000/api/vacations/${vacationId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Не удалось удалить отпуск');
+    }
+
+    // Обновляем страницу после успешного удаления
+    window.location.reload();
+    
+  } catch (error) {
+    console.error('Ошибка при удалении отпуска:', error);
+    setDeleteError(error.message);
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
   const handleDeleteAccount = async () => {
     setDeleteError('');
     setIsDeleting(true);
     try {
-      // Удаляем данные об отпусках
-      localStorage.removeItem(`vacations_${user.email}`);
-      
-      await deleteAccount();
-      logout();
-      navigate('/');
+      const success = await deleteAccount(user.email);
+      if (success) {
+        navigate('/login');
+      } else {
+        setDeleteError('Не удалось удалить аккаунт');
+      }
     } catch (error) {
       setDeleteError(error.message);
     } finally {
@@ -190,8 +217,23 @@ const ProfilePage = () => {
             <ul className="vacations-list">
               {vacations.map(vacation => (
                 <li key={vacation.id}>
-                  <strong>{formatDate(vacation.startDate)} - {formatDate(vacation.endDate)}</strong>
-                  <p>Причина: {vacation.reason}</p>
+                  <div className="vacation-item">
+                    <div>
+                      <strong>{formatDate(vacation.startDate)} - {formatDate(vacation.endDate)}</strong>
+                      <p>Причина: {vacation.reason}</p>
+                    </div>
+                    <button 
+                      className="delete-btn"
+                      onClick={() => {
+                        if (window.confirm('Вы уверены, что хотите удалить этот отпуск?')) {
+                          handleDeleteVacation(vacation.id);
+                        }
+                      }}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Удаление...' : 'Удалить'}
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>

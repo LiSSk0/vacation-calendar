@@ -75,13 +75,20 @@ export const getVacations = async (month, year, departmentId, email) => {
 
 // Добавление отпуска
 export const addVacation = async (vacationData) => {
+  // Нормализуем даты перед отправкой
+  const normalizedData = {
+    ...vacationData,
+    fromDate: vacationData.startDate || vacationData.fromDate,
+    toDate: vacationData.endDate || vacationData.toDate
+  };
+
   const response = await fetch(`${API_BASE_URL}/add_vacation`, {
     method: 'POST',
     headers: { 
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     },
-    body: JSON.stringify(vacationData)
+    body: JSON.stringify(normalizedData)
   });
   
   if (!response.ok) {
@@ -142,11 +149,13 @@ export const updateUserProfile = async (email, profileData) => {
   
   return await response.json();
 };
+
 export const deleteAccount = async (email) => {
   const response = await fetch(`${API_BASE_URL}/users/${email}`, {
     method: 'DELETE',
     headers: {
-      'Authorization': `Bearer ${localStorage.getItem('token')}`
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json'
     }
   });
   
@@ -173,5 +182,22 @@ export const updateProfile = async (userData) => {
     throw new Error(error.message || 'Ошибка при обновлении профиля');
   }
 
+  return await response.json();
+};
+
+export const deleteVacation = async (vacationId) => {
+  const response = await fetch(`${API_BASE_URL}/vacations/${vacationId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('token')}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Ошибка при удалении отпуска');
+  }
+  
   return await response.json();
 };

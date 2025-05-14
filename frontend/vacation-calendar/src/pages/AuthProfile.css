@@ -311,6 +311,27 @@
     color: #666;
   }
   
+  .vacation-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.delete-btn {
+  background: #ff4444;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.delete-btn:hover {
+  background: #cc0000;
+} 
+
   @media (max-width: 768px) {
     .profile-page {
       padding: 0 15px;

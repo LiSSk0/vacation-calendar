@@ -17,54 +17,52 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const [apiVacations, departmentsData, usersData] = await Promise.all([
-          getVacations(month, year),
-          getDepartments(),
-          getUsers()
-        ]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const [apiVacations, departmentsData, usersData] = await Promise.all([
+        getVacations(month, year),
+        getDepartments(),
+        getUsers()
+      ]);
 
-        // Загружаем из localStorage и объединяем с API
-        const localVacations = user?.email 
-          ? JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || []
-          : [];
+       const localVacations = user?.email 
+        ? JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || []
+        : [];
 
-        const allVacations = [...apiVacations, ...localVacations];
-        const uniqueVacations = allVacations.reduce((acc, current) => {
-          const x = acc.find(item => item.id === current.id);
-          return x ? acc : [...acc, {
-            ...current,
-            startDate: current.startDate || current.fromDate,
-            endDate: current.endDate || current.toDate
-          }];
-        }, []);
+      // Объединяем и фильтруем дубликаты
+      const allVacations = [...apiVacations, ...localVacations];
+      const uniqueVacations = allVacations.reduce((acc, current) => {
+        const x = acc.find(item => item.id === current.id);
+        return x ? acc : [...acc, {
+          ...current,
+          startDate: current.startDate || current.fromDate,
+          endDate: current.endDate || current.toDate
+        }];
+      }, []);
 
-        const processedEmployees = usersData.map(user => ({
-          id: user.email,
-          email: user.email,
-          name: `${user.surname} ${user.name}`,
-          fullName: `${user.surname} ${user.name} ${user.middlename}`,
-          department: user.department || 1
-        }));
+      setVacations(uniqueVacations);
+      setDepartments(departmentsData);
+      setEmployees(usersData.map(user => ({
+        id: user.email,
+        email: user.email,
+        name: `${user.surname} ${user.name}`,
+        fullName: `${user.surname} ${user.name} ${user.middlename}`,
+        department: user.department || 1
+      })));
+    } catch (err) {
+      setError(err.message);
+      console.error('Ошибка загрузки данных:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setVacations(uniqueVacations);
-        setDepartments(departmentsData);
-        setEmployees(processedEmployees);
-      } catch (err) {
-        setError(err.message);
-        console.error('Ошибка загрузки данных:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [month, year, user]);
+  fetchData();
+}, [month, year, user]);
 
   const handleMonthChange = (newMonth, newYear) => {
     setMonth(newMonth);
