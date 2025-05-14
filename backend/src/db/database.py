@@ -206,3 +206,17 @@ class DataBase:
                 print(f"Ошибка при удалении пользователя: {e}")
                 return False
 
+    def delete_vacation(self, vacation_id):
+        with Session(self.engine) as session:
+            try:
+                vacation = session.query(Vacation).filter_by(id=vacation_id).first()
+                if vacation:
+                    session.delete(vacation)
+                    session.commit()
+                    return True
+                return False
+            except Exception as e:
+                session.rollback()
+                print(f"Ошибка при удалении отпуска: {e}")
+                return False
+

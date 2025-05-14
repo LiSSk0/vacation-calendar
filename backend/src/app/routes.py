@@ -206,3 +206,11 @@ def register_routes(app):
             print(f"# Ошибка при удалении пользователя: {e}")
             return jsonify({'success': False, 'error': 'Ошибка сервера при удалении пользователя'}), 500
 
+    @app.route('/api/vacations/<int:vacation_id>', methods=['DELETE'])
+    def delete_vacation(vacation_id):
+        try:
+            if app.db.delete_vacation(vacation_id):
+                return jsonify({'success': True}), 200
+            return jsonify({'success': False, 'error': 'Отпуск не найден'}), 404
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
