@@ -7,6 +7,7 @@ import VacationForm from '../components/VacationForm';
 import './AuthProfile.css';
 
 const ProfilePage = () => {
+  const { deleteVacation } = useAuth(); 
   const { user, updateUser, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -107,62 +108,51 @@ const ProfilePage = () => {
     setIsVacationModalOpen(false);
   };
 
-  const handleDeleteVacation = async (vacationId) => {
-    try {
-      setDeleteError('');
-      setIsDeleting(true);
-      
-      const response = await fetch(`http://localhost:5000/api/vacations/${vacationId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
+const handleDeleteVacation = async (vacationId) => {
+  try {
+    setDeleteError('');
+    setIsDeleting(true);
+    
+    await deleteVacation(vacationId);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Не удалось удалить отпуск');
-      }
+    const updatedVacations = vacations.filter(v => v.id !== vacationId);
+    localStorage.setItem(`vacations_${user.email}`, JSON.stringify(updatedVacations));
+    setVacations(updatedVacations);
 
-      const updatedVacations = vacations.filter(v => v.id !== vacationId);
-      localStorage.setItem(`vacations_${user.email}`, JSON.stringify(updatedVacations));
-      setVacations(updatedVacations);
+    // Обновляем статус текущего/ближайшего отпуска
+    const now = new Date();
+    const current = updatedVacations.find(v => {
+      const start = new Date(v.startDate);
+      const end = new Date(v.endDate);
+      return now >= start && now <= end;
+    });
 
-      // Обновляем статус текущего/ближайшего отпуска
-      const now = new Date();
-      const current = updatedVacations.find(v => {
-        const start = new Date(v.startDate);
-        const end = new Date(v.endDate);
-        return now >= start && now <= end;
-      });
+    if (current) {
+      setCurrentVacation(current);
+      setNearestVacation(null);
+      setDaysUntilVacation(0);
+    } else {
+      setCurrentVacation(null);
+      const upcoming = updatedVacations
+        .filter(v => new Date(v.startDate) > now)
+        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-      if (current) {
-        setCurrentVacation(current);
-        setNearestVacation(null);
-        setDaysUntilVacation(0);
+      if (upcoming.length > 0) {
+        const nearest = upcoming[0];
+        setNearestVacation(nearest);
+        setDaysUntilVacation(Math.ceil((new Date(nearest.startDate) - now) / (1000 * 60 * 60 * 24)));
       } else {
-        setCurrentVacation(null);
-        const upcoming = updatedVacations
-          .filter(v => new Date(v.startDate) > now)
-          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
-
-        if (upcoming.length > 0) {
-          const nearest = upcoming[0];
-          setNearestVacation(nearest);
-          setDaysUntilVacation(Math.ceil((new Date(nearest.startDate) - now) / (1000 * 60 * 60 * 24)));
-        } else {
-          setNearestVacation(null);
-          setDaysUntilVacation(null);
-        }
+        setNearestVacation(null);
+        setDaysUntilVacation(null);
       }
-    } catch (error) {
-      console.error('Ошибка при удалении отпуска:', error);
-      setDeleteError(error.message);
-    } finally {
-      setIsDeleting(false);
     }
-  };
+  } catch (error) {
+    console.error('Ошибка при удалении отпуска:', error);
+    setDeleteError(error.message);
+  } finally {
+    setIsDeleting(false);
+  }
+};
 
   const handleDeleteAccount = async () => {
     setDeleteError('');

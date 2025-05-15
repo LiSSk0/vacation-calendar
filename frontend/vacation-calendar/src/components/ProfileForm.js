@@ -6,7 +6,7 @@ const ProfileForm = ({ user, onSubmit }) => {
   const { updateUser } = useAuth();
   const [formData, setFormData] = useState({
     position: user.position || '',
-    department: user.department || DEPARTMENTS[0]?.id || ''
+    department: user.department || ''
   });
   const [error, setError] = useState('');
 

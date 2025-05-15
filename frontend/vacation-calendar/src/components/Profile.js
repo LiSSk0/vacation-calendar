@@ -5,10 +5,10 @@ const Profile = ({ user, onUpdateProfile }) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState({
     position: user?.position || '',
-    department: user?.department || DEPARTMENTS[0]?.id || '',
+    department: user?.department || '', 
     image: null
   });
-
+  
   const handleChange = (e) => {
     const { name, value, files } = e.target;
     setFormData({

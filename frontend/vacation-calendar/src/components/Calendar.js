@@ -57,13 +57,17 @@ const Calendar = ({
     setSelectedEmployee(null);
   };
 
-  const handleEmployeeClick = (employee) => {
-    const employeeVacation = processedVacations.find(v => v.employeeId === employee.email);
-    setSelectedEmployee({
-      ...employee,
-      vacation: employeeVacation
-    });
-  };
+const handleEmployeeClick = (employee) => {
+  const employeeVacation = processedVacations.find(v => v.employeeId === employee.email);
+  setSelectedEmployee({
+    ...employee,
+    vacation: employeeVacation ? {
+      ...employeeVacation,
+      department: employeeVacation.department || employee.department
+    } : null
+  });
+};
+
 
   const filteredEmployees = employees.filter(employee => {
     const matchesDepartment = selectedDepartment === 'all' ||
@@ -175,7 +179,7 @@ const Calendar = ({
           <div className="vacation-sidebar">
             <h3>{selectedEmployee.surname} {selectedEmployee.name}</h3>
             <div className="vacation-details">
-              <p><strong>Отдел:</strong> {departments.find(d => d.id === selectedEmployee.department)?.name}</p>
+              <p><strong>Отдел:</strong> {selectedEmployee.department && departments.find(d => d.id === selectedEmployee.department)?.name} </p>
               <p><strong>Период:</strong> {formatDate(selectedEmployee.vacation.fromDate)} - {formatDate(selectedEmployee.vacation.toDate)}</p>
               <p><strong>Причина:</strong> {selectedEmployee.vacation.reason}</p>
             </div>

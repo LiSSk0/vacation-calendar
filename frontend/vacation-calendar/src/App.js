@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import HomePage from './pages/HomePage';
@@ -24,6 +24,12 @@ const ProtectedRoute = ({ children, requireDepartment = false }) => {
 };
 
 function App() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleVacationChange = () => {
+    setRefreshKey(prev => prev + 1);
+  };
+
   return (
     <AuthProvider>
       <Router>
@@ -37,7 +43,7 @@ function App() {
               path="/" 
               element={
                 <ProtectedRoute>
-                  <HomePage />
+                  <HomePage refreshKey={refreshKey} />
                 </ProtectedRoute>
               } 
             />
@@ -46,7 +52,7 @@ function App() {
               path="/profile" 
               element={
                 <ProtectedRoute>
-                  <ProfilePage />
+                  <ProfilePage onVacationChange={handleVacationChange} />
                 </ProtectedRoute>
               } 
             />
@@ -55,7 +61,7 @@ function App() {
               path="/vacations" 
               element={
                 <ProtectedRoute requireDepartment>
-                  <HomePage />
+                  <HomePage refreshKey={refreshKey} />
                 </ProtectedRoute>
               } 
             />
