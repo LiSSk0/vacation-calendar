@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from '../components/Calendar';
-import AddVacationModal from '../components/AddVacationModal';
+import Modal from '../components/Modal';
+import VacationForm from '../components/VacationForm';
 import { useAuth } from '../context/AuthContext';
 import { getVacations, getDepartments, getUsers, addVacation } from '../api';
 import './AuthProfile.css';
@@ -17,52 +18,51 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-useEffect(() => {
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const [apiVacations, departmentsData, usersData] = await Promise.all([
-        getVacations(month, year),
-        getDepartments(),
-        getUsers()
-      ]);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const [apiVacations, departmentsData, usersData] = await Promise.all([
+          getVacations(month, year),
+          getDepartments(),
+          getUsers()
+        ]);
 
-       const localVacations = user?.email 
-        ? JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || []
-        : [];
+        const localVacations = user?.email 
+          ? JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || []
+          : [];
 
-      // Объединяем и фильтруем дубликаты
-      const allVacations = [...apiVacations, ...localVacations];
-      const uniqueVacations = allVacations.reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        return x ? acc : [...acc, {
-          ...current,
-          startDate: current.startDate || current.fromDate,
-          endDate: current.endDate || current.toDate
-        }];
-      }, []);
+        const allVacations = [...apiVacations, ...localVacations];
+        const uniqueVacations = allVacations.reduce((acc, current) => {
+          const x = acc.find(item => item.id === current.id);
+          return x ? acc : [...acc, {
+            ...current,
+            startDate: current.startDate || current.fromDate,
+            endDate: current.endDate || current.toDate
+          }];
+        }, []);
 
-      setVacations(uniqueVacations);
-      setDepartments(departmentsData);
-      setEmployees(usersData.map(user => ({
-        id: user.email,
-        email: user.email,
-        name: `${user.surname} ${user.name}`,
-        fullName: `${user.surname} ${user.name} ${user.middlename}`,
-        department: user.department || 1
-      })));
-    } catch (err) {
-      setError(err.message);
-      console.error('Ошибка загрузки данных:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+        setVacations(uniqueVacations);
+        setDepartments(departmentsData);
+        setEmployees(usersData.map(user => ({
+          id: user.email,
+          email: user.email,
+          name: `${user.surname} ${user.name}`,
+          fullName: `${user.surname} ${user.name} ${user.middlename}`,
+          department: user.department || 1
+        })));
+      } catch (err) {
+        setError(err.message);
+        console.error('Ошибка загрузки данных:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchData();
-}, [month, year, user]);
+    fetchData();
+  }, [month, year, user]);
 
   const handleMonthChange = (newMonth, newYear) => {
     setMonth(newMonth);
@@ -80,14 +80,12 @@ useEffect(() => {
         endDate: vacationData.endDate,
         department: user.department,
         reason: vacationData.reason,
-        // Дублируем для API
         fromDate: vacationData.startDate,
         toDate: vacationData.endDate
       };
 
       await addVacation(newVacation);
       
-      // Сохраняем в localStorage
       const localVacations = JSON.parse(localStorage.getItem(`vacations_${user.email}`)) || [];
       localStorage.setItem(
         `vacations_${user.email}`,
@@ -128,12 +126,17 @@ useEffect(() => {
         employees={employees}
       />
 
-      <AddVacationModal
-        isOpen={isAddModalOpen}
+      <Modal 
+        isOpen={isAddModalOpen} 
         onClose={() => setIsAddModalOpen(false)}
-        onSave={handleAddVacation}
-        user={user}
-      />
+        title="Добавить отпуск"
+      >
+        <VacationForm 
+          onSubmit={handleAddVacation}
+          onCancel={() => setIsAddModalOpen(false)}
+          user={user}
+        />
+      </Modal>
     </div>
   );
 };

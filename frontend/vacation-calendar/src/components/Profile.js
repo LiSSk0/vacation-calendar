@@ -26,15 +26,6 @@ const Profile = ({ user, onUpdateProfile }) => {
   return (
     <div className="profile-container">
       <div className="profile-info">
-        <div className="profile-image">
-          {user?.image ? (
-            <img src={user.image} alt="Profile" />
-          ) : (
-            <div className="profile-image-placeholder">
-              {user?.name?.charAt(0)}{user?.surname?.charAt(0)}
-            </div>
-          )}
-        </div>
         <div className="profile-details">
           <p><strong>Имя:</strong> {user?.name}</p>
           <p><strong>Фамилия:</strong> {user?.surname}</p>
@@ -73,15 +64,6 @@ const Profile = ({ user, onUpdateProfile }) => {
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
-          </div>
-          <div className="form-group">
-            <label>Фото профиля:</label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleChange}
-            />
           </div>
           <div className="form-actions">
             <button type="submit" className="btn-primary">Сохранить</button>

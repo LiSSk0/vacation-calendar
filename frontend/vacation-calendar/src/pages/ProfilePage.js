@@ -18,7 +18,6 @@ const ProfilePage = () => {
   const [currentVacation, setCurrentVacation] = useState(null);
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-  
 
   useEffect(() => {
     const loadVacations = () => {
@@ -82,7 +81,9 @@ const ProfilePage = () => {
       endDate: vacationData.endDate,
       reason: vacationData.reason,
       email: user.email,
-      department: user.department
+      department: user.department,
+      fromDate: vacationData.startDate,
+      toDate: vacationData.endDate
     };
 
     const updatedVacations = [...vacations, newVacation];
@@ -97,6 +98,7 @@ const ProfilePage = () => {
     if (now >= startDate && now <= endDate) {
       setCurrentVacation(newVacation);
       setNearestVacation(null);
+      setDaysUntilVacation(0);
     } else if (startDate > now && (!nearestVacation || startDate < new Date(nearestVacation.startDate))) {
       setNearestVacation(newVacation);
       setDaysUntilVacation(Math.ceil((startDate - now) / (1000 * 60 * 60 * 24)));
@@ -106,34 +108,61 @@ const ProfilePage = () => {
   };
 
   const handleDeleteVacation = async (vacationId) => {
-  try {
-    setDeleteError('');
-    setIsDeleting(true);
-    
-    // Удаляем из базы данных
-    const response = await fetch(`http://localhost:5000/api/vacations/${vacationId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json'
+    try {
+      setDeleteError('');
+      setIsDeleting(true);
+      
+      const response = await fetch(`http://localhost:5000/api/vacations/${vacationId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Не удалось удалить отпуск');
       }
-    });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Не удалось удалить отпуск');
+      const updatedVacations = vacations.filter(v => v.id !== vacationId);
+      localStorage.setItem(`vacations_${user.email}`, JSON.stringify(updatedVacations));
+      setVacations(updatedVacations);
+
+      // Обновляем статус текущего/ближайшего отпуска
+      const now = new Date();
+      const current = updatedVacations.find(v => {
+        const start = new Date(v.startDate);
+        const end = new Date(v.endDate);
+        return now >= start && now <= end;
+      });
+
+      if (current) {
+        setCurrentVacation(current);
+        setNearestVacation(null);
+        setDaysUntilVacation(0);
+      } else {
+        setCurrentVacation(null);
+        const upcoming = updatedVacations
+          .filter(v => new Date(v.startDate) > now)
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+        if (upcoming.length > 0) {
+          const nearest = upcoming[0];
+          setNearestVacation(nearest);
+          setDaysUntilVacation(Math.ceil((new Date(nearest.startDate) - now) / (1000 * 60 * 60 * 24)));
+        } else {
+          setNearestVacation(null);
+          setDaysUntilVacation(null);
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении отпуска:', error);
+      setDeleteError(error.message);
+    } finally {
+      setIsDeleting(false);
     }
-
-    // Обновляем страницу после успешного удаления
-    window.location.reload();
-    
-  } catch (error) {
-    console.error('Ошибка при удалении отпуска:', error);
-    setDeleteError(error.message);
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  };
 
   const handleDeleteAccount = async () => {
     setDeleteError('');
@@ -309,7 +338,8 @@ const ProfilePage = () => {
       >
         <VacationForm 
           user={user}
-          onSubmit={handleAddVacation} 
+          onSubmit={handleAddVacation}
+          onCancel={() => setIsVacationModalOpen(false)}
         />
       </Modal>
     </div>
