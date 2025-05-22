@@ -35,26 +35,40 @@ const ProfilePage = () => {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
 
+        // Проверка на текущий отпуск (включая сегодняшний день)
         const current = normalizedVacations.find(v => {
           const start = new Date(v.startDate);
+          start.setHours(0, 0, 0, 0);
           const end = new Date(v.endDate);
+          end.setHours(23, 59, 59, 999);
           return now >= start && now <= end;
         });
 
         if (current) {
           setCurrentVacation(current);
+          setNearestVacation(null);
+          setDaysUntilVacation(0);
           return;
         }
 
         const upcoming = normalizedVacations
-          .filter(v => new Date(v.startDate) > now)
+          .filter(v => {
+            const start = new Date(v.startDate);
+            start.setHours(0, 0, 0, 0);
+            return start > now;
+          })
           .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
         if (upcoming.length > 0) {
           const nearest = upcoming[0];
           setNearestVacation(nearest);
-          const daysDiff = Math.ceil((new Date(nearest.startDate) - now) / (1000 * 60 * 60 * 24));
+          const startDate = new Date(nearest.startDate);
+          startDate.setHours(0, 0, 0, 0);
+          const daysDiff = Math.ceil((startDate - now) / (1000 * 60 * 60 * 24));
           setDaysUntilVacation(daysDiff);
+        } else {
+          setNearestVacation(null);
+          setDaysUntilVacation(null);
         }
       } catch (error) {
         console.error('Ошибка загрузки отпусков:', error);
@@ -321,7 +335,7 @@ const handleDeleteVacation = async (vacationId) => {
         />
       </Modal>
 
-      <Modal 
+       <Modal 
         isOpen={isVacationModalOpen} 
         onClose={() => setIsVacationModalOpen(false)}
         title="Добавить отпуск"
@@ -330,6 +344,7 @@ const handleDeleteVacation = async (vacationId) => {
           user={user}
           onSubmit={handleAddVacation}
           onCancel={() => setIsVacationModalOpen(false)}
+          existingVacations={vacations}
         />
       </Modal>
     </div>

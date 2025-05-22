@@ -1,5 +1,5 @@
 // src/api.js
-const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL = 'http://localhost:5000/api';
 
 // Функция входа в систему
 export const login = async (email, password) => {
@@ -28,6 +28,22 @@ export const register = async (userData) => {
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message || 'Ошибка регистрации');
+  }
+  
+  return await response.json();
+};
+
+// Проверка валидности токена
+export const verifyToken = async (token) => {
+  const response = await fetch(`${API_BASE_URL}/verify-token`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Неверный токен');
   }
   
   return await response.json();

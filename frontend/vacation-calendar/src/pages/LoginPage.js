@@ -1,4 +1,3 @@
-// src/pages/LoginPage.js
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +6,7 @@ import './AuthProfile.css';
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, error, passwordHint } = useAuth();
+  const { login, error } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -40,11 +39,6 @@ const LoginPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          {passwordHint && (
-            <div className="password-hint">
-              <small>{passwordHint}</small>
-            </div>
-          )}
         </div>
         <button type="submit" className="btn-primary">Войти</button>
       </form>

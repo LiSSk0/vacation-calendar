@@ -134,6 +134,7 @@ const HomePage = ({ refreshKey }) => {
           onSubmit={handleAddVacation}
           onCancel={() => setIsAddModalOpen(false)}
           user={user}
+          existingVacations={vacations}
         />
       </Modal>
     </div>

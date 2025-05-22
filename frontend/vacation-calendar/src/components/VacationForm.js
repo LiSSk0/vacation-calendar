@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './AddVacationModal.css';
 
-const VacationForm = ({ onSubmit, user, onCancel }) => {
+const VacationForm = ({ onSubmit, user, onCancel, existingVacations = [] }) => {
   const [formData, setFormData] = useState({
     startDate: '',
     endDate: '',
@@ -12,6 +12,22 @@ const VacationForm = ({ onSubmit, user, onCancel }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const checkVacationOverlap = (newStart, newEnd) => {
+    const newStartDate = new Date(newStart);
+    const newEndDate = new Date(newEnd);
+    
+    return existingVacations.some(vacation => {
+      const existingStart = new Date(vacation.startDate || vacation.fromDate);
+      const existingEnd = new Date(vacation.endDate || vacation.toDate);
+      
+      return (
+        (newStartDate >= existingStart && newStartDate <= existingEnd) ||
+        (newEndDate >= existingStart && newEndDate <= existingEnd) ||
+        (newStartDate <= existingStart && newEndDate >= existingEnd)
+      );
+    });
   };
 
   const handleSubmit = (e) => {
@@ -43,6 +59,11 @@ const VacationForm = ({ onSubmit, user, onCancel }) => {
     
     if (startDate < today) {
       setError('Дата начала не может быть в прошлом');
+      return;
+    }
+    
+    if (checkVacationOverlap(formData.startDate, formData.endDate)) {
+      setError('Этот период пересекается с существующим отпуском');
       return;
     }
     

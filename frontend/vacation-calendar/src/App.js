@@ -10,7 +10,11 @@ import { AuthProvider } from './context/AuthContext';
 import './styles/global.css';
 
 const ProtectedRoute = ({ children, requireDepartment = false }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div className="loading">Загрузка...</div>;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -38,7 +42,6 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-
             <Route 
               path="/" 
               element={
@@ -47,7 +50,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-            
             <Route 
               path="/profile" 
               element={
@@ -56,7 +58,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
             <Route 
               path="/vacations" 
               element={
@@ -65,7 +66,6 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
