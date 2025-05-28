@@ -11,7 +11,7 @@ export const login = async (email, password) => {
   
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || 'Ошибка входа');
+    throw new Error(error.message || 'Неверные данные');
   }
   
   return await response.json();

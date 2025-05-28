@@ -1,6 +1,5 @@
 from flask import request, jsonify
 from db.validation import is_valid_email, is_valid_name
-from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def register_routes(app):
@@ -35,9 +34,6 @@ def register_routes(app):
         try:
             data = request.get_json()
             email = data.get('email')
-            # print(type(data.get('password')))
-            # password=generate_password_hash(data.get('password'), method='pbkdf2:sha256')
-            # print(password)
             password = data.get('password')
 
             # Проверка на наличие почты и пароля
@@ -48,14 +44,12 @@ def register_routes(app):
             user = app.db.get_name_by_email(email)
             password_storage = app.db.get_password_by_email(email)
 
-
             # Проверяем, что запрошенный пользователь есть в БД
             if not user:
                 return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
 
             # Проверяем, подходит ли пароль
             stored_password = password_storage.password
-            print(stored_password)
 
             # if not check_password_hash(stored_password, password):
             if stored_password != password:
@@ -82,11 +76,13 @@ def register_routes(app):
         try:
             data = request.get_json()
 
+            departmentID = app.db.get_department_id_by_name(data.get('department'))
+
             app.db.add_vacation(
                 data.get('email'),
                 data.get('fromDate'),
                 data.get('toDate'),
-                1,# TODO РАЗОБРАТЬСЯ ПОЧЕМУ ТУТ ДОЛЖЕН БЫТЬ INT А С ФРОНТА ЕДУТ СТРИНГИ #data.get('department'),
+                departmentID,
                 data.get('reason')
             )
             return jsonify({'success': True})
@@ -191,7 +187,60 @@ def register_routes(app):
             return jsonify({'success': False,
                             'error': 'Ошибка сервера при получении списка отделов'}), 500
 
+    # Обновление отдела пользователя
+    @app.route('/api/departments', methods=['POST'])
+    def set_department():
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            department_name = data.get('department')
 
+            if not email or not department_name:
+                return jsonify({'success': False, 'error': 'Отсутствует email или название отдела'}), 400
+
+            # Получаем ID отдела по названию
+            department_id = app.db.get_department_id_by_name(department_name)
+            if department_id is None:
+                return jsonify({'success': False, 'error': 'Отдел не найден'}), 404
+
+            # Проверяем, существует ли пользователь
+            if not app.db.get_name_by_email(email):
+                return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
+
+            # Обновляем отдел
+            app.db.set_department_by_email(email, department_id)
+
+            return jsonify({'success': True}), 200
+
+        except Exception as e:
+            print(f"# Ошибка при обновлении отдела пользователя: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при обновлении отдела пользователя'}), 500
+
+    # Обновление позиции пользователя
+    @app.route('/api/position', methods=['POST'])
+    def set_position():
+        try:
+            data = request.get_json()
+            email = data.get('email')
+            position = data.get('position')
+
+            if not email or position is None:
+                return jsonify({'success': False, 'error': 'Отсутствует email или позиция'}), 400
+
+            # Проверяем, существует ли пользователь
+            if not app.db.get_name_by_email(email):
+                return jsonify({'success': False, 'error': 'Пользователь не найден'}), 404
+
+            # Обновляем позицию
+            app.db.set_position_by_email(email, position)
+
+            return jsonify({'success': True}), 200
+
+        except Exception as e:
+            print(f"# Ошибка при обновлении позиции пользователя: {e}")
+            return jsonify({'success': False, 'error': 'Ошибка сервера при обновлении позиции пользователя'}), 500
+
+    # Удаление пользователя
     @app.route('/api/users/<email>', methods=['DELETE'])
     def delete_user(email):
         try:
@@ -206,6 +255,7 @@ def register_routes(app):
             print(f"# Ошибка при удалении пользователя: {e}")
             return jsonify({'success': False, 'error': 'Ошибка сервера при удалении пользователя'}), 500
 
+    # Удаление отпуска
     @app.route('/api/vacations/<int:vacation_id>', methods=['DELETE'])
     def delete_vacation(vacation_id):
         try:

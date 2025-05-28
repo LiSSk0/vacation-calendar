@@ -22,7 +22,8 @@ if __name__ == '__main__':
         sys.exit()
 
     db = DataBase(DB_NAME, DB_USER, DB_PASSWORD)
-    # Для отладки:
+
+    # Для добавления отдела и отладки:
     # db.add_department("Отдел веб-технологий")
     # db.print(db.users_table)
     # db.print(db.departments_table)

@@ -39,6 +39,7 @@ class DataBase:
                             Column('name', String, nullable=False),
                             Column('surname', String, nullable=False),
                             Column('middlename', String, nullable=False),
+                            Column('department', Integer),
                             Column('position', String),
                             Column('image', LargeBinary))
 
@@ -66,12 +67,13 @@ class DataBase:
         self.engine = engine
 
     # Добавление пользователя в таблицу 'users'
-    def add_user(self, email, name, surname, middlename, position=None, image=None):
+    def add_user(self, email, name, surname, middlename, department=None, position=None, image=None):
         new_user = User(
             email=email,
             name=name,
             surname=surname,
             middlename=middlename,
+            department=department,
             position=position,
             image=image
         )
@@ -96,7 +98,6 @@ class DataBase:
     def add_auth(self, email, password):
         new_auth = AuthEntry(
             email=email,
-            #password=generate_password_hash(password, method='pbkdf2:sha256')
             password=password
         )
         with Session(self.engine) as session:
@@ -158,6 +159,35 @@ class DataBase:
             vacations = session.query(Vacation).filter_by(email=email).all()
             return vacations
 
+    # Получение ID отдела по его названию
+    def get_department_id_by_name(self, name):
+        with Session(self.engine) as session:
+            department = session.query(Department).filter_by(name=name).first()
+            if department:
+                return department.id
+            return None
+
+    # Обновляем отдел пользователя по email (по ID отдела)
+    def set_department_by_email(self, email, department_id):
+        with Session(self.engine) as session:
+            user = session.query(User).filter_by(email=email).first()
+            if user:
+                user.department = department_id
+                session.commit()
+                return True
+            return False
+
+    # Обновляем должность пользователя по email
+    def set_position_by_email(self, email, position):
+        with Session(self.engine) as session:
+            user = session.query(User).filter_by(email=email).first()
+            if user:
+                user.position = position
+                session.commit()
+                return True
+            return False
+
+    # Вывод таблиц в консоль для отладки
     def print(self, table):
         with Session(self.engine) as session:
             # Выполняем запрос к таблице, чтобы получить все записи

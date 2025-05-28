@@ -13,14 +13,16 @@ class User(Base):
     name = Column(String, nullable=False)
     surname = Column(String, nullable=False)
     middlename = Column(String, nullable=False)
+    department = Column(Integer, nullable=True)
     position = Column(String, nullable=True)
     image = Column(LargeBinary, nullable=True)
 
-    def __init__(self, email, name, surname, middlename, position=None, image=None):
+    def __init__(self, email, name, surname, middlename, department=None, position=None, image=None):
         self.email = email
         self.name = name
         self.surname = surname
         self.middlename = middlename
+        self.department = department
         self.position = position
         self.image = image
 
