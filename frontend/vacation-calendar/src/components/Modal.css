@@ -46,10 +46,34 @@
   font-size: 1.5rem;
   cursor: pointer;
   color: #666;
+  padding: 0;
+  line-height: 1;
 }
 
 .modal-body {
   padding: 20px;
+}
+
+.modal-body .form-group {
+  margin-bottom: 20px;
+}
+
+.modal-body label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #4a4a42;
+}
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
 }
 
 @keyframes modalFadeIn {

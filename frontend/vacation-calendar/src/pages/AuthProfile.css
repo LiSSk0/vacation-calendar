@@ -166,15 +166,16 @@
     margin-bottom: 25px;
   }
   
-  .auth-form {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group {
-    margin-bottom: 20px;
-  }
-  
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; 
+}
+
+.form-group {
+  margin-bottom: 0; 
+}
+
   .form-group label {
     display: block;
     margin-bottom: 8px;
@@ -182,13 +183,14 @@
     color: #4a4a42;
   }
   
-  .form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-  }
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box; /* Учитываем padding в ширине */
+}
   
   .btn-primary {
     background-color: #A7BD40;
@@ -200,7 +202,9 @@
     font-size: 1rem;
     margin-top: 10px;
     transition: background-color 0.3s;
-  }
+      width: 100%; 
+}
+  
   
   .btn-primary:hover {
     background-color: #8f9779;
@@ -215,10 +219,10 @@
     text-align: center;
   }
   
-  .auth-page p {
-    text-align: center;
-    margin-top: 20px;
-  }
+ .auth-page p {
+  text-align: center;
+  margin-top: 20px;
+}
   
   .auth-page a {
     color: #b5b867;
